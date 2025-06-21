@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Domain.Entities
 {
-    public class Order
+    public class Order:EntityBase
     {
 
         public Guid CustomerId { get; set; }
