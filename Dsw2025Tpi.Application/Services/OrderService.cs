@@ -33,7 +33,9 @@ namespace Dsw2025Tpi.Application.Services
             var productIds = request.OrderItems.Select(i => i.ProductId).ToList();
 
             
+            //aca creo la var local
             var products = await _repository.GetFiltered<Product>(p => productIds.Contains(p.Id));
+
             if (products == null || products.Count() != request.OrderItems.Count)
             {
                 throw new EntityNotFoundException("Uno o más productos no existen.");
@@ -51,7 +53,6 @@ namespace Dsw2025Tpi.Application.Services
                 {
                     throw new ArgumentException($"Stock insuficiente para el producto '{product.Name}'. Disponible: {product.StockQuantity}, solicitado: {item.Quantity}");
                 }
-
                 
                 product.StockQuantity -= item.Quantity;
 
@@ -71,35 +72,40 @@ namespace Dsw2025Tpi.Application.Services
             
             var order = new Order
             {
-                Id = Guid.NewGuid(),
+                
                 CustomerId = request.CustomerId,
                 ShippingAddress = request.ShippingAddress,
                 BillingAddress = request.BillingAddress,
-                TotalAmount = totalAmount,
                 Date = DateTime.UtcNow,
                 Status = OrderStatus.PENDING,
                 OrderItems = orderItems
             };
 
-            await _repository.Add(order);
-            await _repository.SaveChanges(); 
+            //wait _repository.Add(order);
+           // await _repository.SaveChanges();
 
-            
             return new OrderModel.Response(
-                order.Id,
-                order.Status.ToString(),
-                order.TotalAmount,
-                order.Date,
-                order.ShippingAddress,
-                order.BillingAddress,
-                order.OrderItems.Select(i => new OrderModel.OrderItemResponse(
-                    i.ProductId,
-                    i.Name,
-                    i.Quantity,
-                    i.UnitPrice,
-                    i.Subtotal
-                )).ToList()
-            );
+                     order.Id,
+                     order.Status,
+                     order.TotalAmount,
+                     order.Date,
+                     order.ShippingAddress,
+                     order.BillingAddress,
+
+            order.OrderItems.Select(i =>
+                     {
+                         var product = products.First(p => p.Id == i.ProductId);
+                         return new OrderModel.OrderItemResponse(
+                            i.ProductId,
+                            product.Name, 
+                            i.Quantity,
+                            i.UnitPrice,
+                            i.Subtotal
+                            );
+                            }).ToList()
+             );
+
+
         }
     }
 }
