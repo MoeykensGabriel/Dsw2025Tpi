@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dsw2025Tpi.Application.Dtos
+namespace Dsw2025Tpi.Application.Services
 {
-    internal class ProductRequest
+    internal class ProductService
     {
     }
 }
