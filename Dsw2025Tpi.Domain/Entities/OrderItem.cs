@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Domain.Entities
 {
-    public class OrderItem
+    public class OrderItem :  EntityBase
     {
         public Guid OrderId { get; set; }
         public string SkuProd { get; set; }
