@@ -28,7 +28,7 @@ namespace Dsw2025Tpi.Application.Dtos
                 Guid Id,
                 OrderStatus Status,
                 decimal TotalAmount,
-                DateTime CreatedAt,
+                DateTime Date,
                 string ShippingAddress,
                 string BillingAddress,
                 List<OrderItemResponse> Items
