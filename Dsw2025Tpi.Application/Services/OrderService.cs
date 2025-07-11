@@ -93,6 +93,7 @@ namespace Dsw2025Tpi.Application.Services
 
                             itemInOrder = new OrderItem();
                             itemInOrder.SkuProd = p.Sku;
+                            itemInOrder.ProductId = p.Id;
                             itemInOrder.Quantity = q.Quantity;
                             itemInOrder.UnitPrice = q.CurrentUnitPrice;
                             itemInOrder.Subtotal = (q.CurrentUnitPrice * q.Quantity);
