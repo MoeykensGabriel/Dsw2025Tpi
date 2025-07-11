@@ -160,7 +160,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Valor del precio unitario menor/igual a cero.");
+                            throw new ArgumentException("Error: Valor del precio unitario menor/igual a cero.");
                         }
                     }
 

@@ -195,7 +195,7 @@ namespace Dsw2025Tpi.Application.Services
             }
             else
             {
-                throw new EntityNotFoundException("Orden a inhabilitar no Cargado/Disponible.");
+                throw new EntityNotFoundException("Orden a inhabilitar No Cargado/Disponible.");
             }
         }
 

@@ -68,7 +68,7 @@ public class Dsw2025TpiContext: DbContext
             t.Property(x => x.Quantity).IsRequired();
             t.Property(x => x.Subtotal);
             t.Property(x => x.OrderId);
-            t.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId); // es la fk, razon del NULL
+            t.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId); 
             t.Property(x => x.Id).IsRequired().HasColumnName("id");
 
             t.ToTable("OrderItems");

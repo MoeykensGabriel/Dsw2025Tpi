@@ -110,7 +110,7 @@ namespace Dsw2025Tpi.Api.Controllers
             try
             {
                 await _productsManagementService.DeleteProduct(id);
-                return Ok("Producto eliminado existosamente de la base de datos.");
+                return Ok("Producto eliminado con exito de la base de datos.");
             }
             catch (EntityNotFoundException ex)
             {

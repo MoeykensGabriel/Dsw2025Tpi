@@ -43,7 +43,7 @@ namespace Dsw2025Tpi.Api.Controllers
             }
             catch (DuplicatedEntityException)
             {
-                return BadRequest("Orden duplicada.");
+                return BadRequest("Error: Orden duplicada.");
             }
             catch (EntityNotFoundException ex)
             {

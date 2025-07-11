@@ -44,7 +44,6 @@ namespace Dsw2025Tpi.Application.Dtos
             );
 
             public record UpdateStatusRequest(string NewStatus);
-
     }
 
 }
