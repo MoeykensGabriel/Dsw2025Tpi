@@ -116,6 +116,10 @@ namespace Dsw2025Tpi.Api.Controllers
             {
                 return NotFound($"No hay producto con ID {id}");
             }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPatch("{id}")]
