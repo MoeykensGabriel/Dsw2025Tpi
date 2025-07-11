@@ -1,7 +1,7 @@
 ﻿namespace Dsw2025Tpi.Application.Exceptions
 {
     [Serializable]
-    internal class DuplicatedEntityException : Exception
+    public class DuplicatedEntityException : Exception
     {
         public DuplicatedEntityException()
         {
