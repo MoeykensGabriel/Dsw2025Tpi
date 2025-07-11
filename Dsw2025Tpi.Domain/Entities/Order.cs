@@ -14,7 +14,7 @@ namespace Dsw2025Tpi.Domain.Entities
         public string BillingAddress { get; set; }
         public string? Notes { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.PENDING;
-        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public IEnumerable<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public decimal TotalAmount => OrderItems.Sum(item => item.Subtotal);
 
         public Order() { }
@@ -27,6 +27,7 @@ namespace Dsw2025Tpi.Domain.Entities
             OrderItems = items;
             Date = DateTime.UtcNow;
             Status = OrderStatus.PENDING;
+            
         }
     }
 }
