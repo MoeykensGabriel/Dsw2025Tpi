@@ -42,6 +42,9 @@ namespace Dsw2025Tpi.Application.Dtos
                 decimal UnitPrice,
                 decimal Subtotal
             );
-        }
-    
+
+            public record UpdateStatusRequest(string NewStatus);
+
+    }
+
 }
