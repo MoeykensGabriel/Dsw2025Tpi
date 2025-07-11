@@ -10,7 +10,8 @@ namespace Dsw2025Tpi.Domain.Entities
     {
         public Guid OrderId { get; set; }
         public string SkuProd { get; set; }
-
+        
+        public Guid ProductId { get; set; } // esta es la FK q me falto agregar, por eso es NULL la columna
         public Product? Product { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
