@@ -21,7 +21,8 @@ namespace Dsw2025Tpi.Application.Dtos
                 Guid CustomerId,
                 string ShippingAddress,
                 string BillingAddress,
-                List<OrderItemRequest> OrderItems
+                List<OrderItemRequest> OrderItems,
+                string Notes
             );
 
             public record Response(
