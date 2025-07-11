@@ -180,15 +180,21 @@ namespace Dsw2025Tpi.Application.Services
         public async Task DeleteProduct(Guid id)
         {
             var productById = await _repository.GetById<Product>(id);
-            if (productById != null)
+
+            if (productById == null)
             {
-                await _repository.Delete(productById);
+                throw new EntityNotFoundException("Producto a eliminar no cargado/disponible.");
             }
-            else
+
+            var orderItems = await _repository.Where<OrderItem>(oi => oi.ProductId == id);
+            if (orderItems.Any())
             {
-                throw new EntityNotFoundException("Producto a inhabilitar no cargado/disponible.");
+                throw new ArgumentException("No se puede eliminar el producto porque está asociado a una orden.");
             }
+
+            await _repository.Delete(productById);
         }
+
 
         public async Task DisableProduct(Guid id)
         {
