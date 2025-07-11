@@ -15,7 +15,7 @@ namespace Dsw2025Tpi.Domain.Entities
         public string? Notes { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.PENDING;
         public IEnumerable<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public decimal TotalAmount => OrderItems.Sum(item => item.Subtotal);
+        public decimal TotalAmount {  get; set; }
 
         public Order() { }
         public Order(Guid customerId, string shippingAddress, string billingAddress, List<OrderItem> items, string? notes = null)

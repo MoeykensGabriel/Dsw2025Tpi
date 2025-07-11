@@ -65,4 +65,10 @@ public class EfRepository: IRepository
         }
         return includedQuery;
     }
+
+    public async Task<IEnumerable<T>> Where<T>(Expression<Func<T, bool>> predicate) where T : class
+    {
+        return await _context.Set<T>().Where(predicate).ToListAsync();
+    }
+
 }

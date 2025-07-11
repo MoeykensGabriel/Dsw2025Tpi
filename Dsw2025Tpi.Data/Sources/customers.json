@@ -1,0 +1,26 @@
+[
+  {
+    "Id": "a1111111-aaaa-1111-aaaa-111111111111",
+    "Name": "Francisco Vicente",
+    "Email": "fvicente@utn.com",
+    "PhoneNumber": "1123456789"
+  },
+  {
+    "Id": "b2222222-bbbb-2222-bbbb-222222222222",
+    "Name": "Nico Avila",
+    "Email": "nicavila@boca.com",
+    "PhoneNumber": "1133344455"
+  },
+  {
+    "Id": "c3333333-cccc-3333-cccc-333333333333",
+    "Name": "Moeykens Gabriel",
+    "Email": "gabmoeykens@river.com",
+    "PhoneNumber": "1145566778"
+  },
+  {
+    "Id": "d4444444-dddd-4444-dddd-444444444444",
+    "Name": "Nico Bazan ",
+    "Email": "nicbazan@atletico.com",
+    "PhoneNumber": "1177788899"
+  }
+]

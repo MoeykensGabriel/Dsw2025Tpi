@@ -194,8 +194,40 @@ namespace Dsw2025Tpi.Application.Services
             }
             else
             {
-                throw new EntityNotFoundException("Orden a inhabilitar no cargado/disponible.");
+                throw new EntityNotFoundException("Orden a inhabilitar no Cargado/Disponible.");
             }
+        }
+
+        public async Task<OrderModel.Response> UpdateOrderStatus(Guid id, string newStatus)
+        {
+            var order = await _repository.GetById<Order>(id);
+            if (order == null)
+                throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
+
+            if (!Enum.TryParse<OrderStatus>(newStatus, true, out var parsedStatus))
+                throw new ArgumentException($"Estado inválido: {newStatus}");
+
+            order.Status = parsedStatus;
+            await _repository.Update(order);
+
+            var items = await _repository.Where<OrderItem>(i => i.OrderId == order.Id);
+            var products = await _repository.GetAll<Product>();
+
+            return new OrderModel.Response(
+                Id: order.Id,
+                Status: order.Status,
+                TotalAmount: order.TotalAmount,
+                Date: order.Date,
+                ShippingAddress: order.ShippingAddress,
+                BillingAddress: order.BillingAddress,
+                Items: items.Select(item => new OrderModel.OrderItemResponse(
+                    ProductId: products.First(p => p.Sku == item.SkuProd).Id,
+                    Name: products.First(p => p.Sku == item.SkuProd).Name!,
+                    Quantity: item.Quantity,
+                    UnitPrice: item.UnitPrice,
+                    Subtotal: item.Subtotal
+                )).ToList()
+            );
         }
     }
 }
