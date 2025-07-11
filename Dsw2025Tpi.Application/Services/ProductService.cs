@@ -30,8 +30,7 @@ namespace Dsw2025Tpi.Application.Services
                 throw new ArgumentException("Faltan datos del producto a llenar.");
             }
 
-            if (product.StockQuantity == null || product.CurrentUnitPrice == null ||
-                product.StockQuantity < 0 || product.CurrentUnitPrice <= 0)
+            if (product.StockQuantity < 0 || product.CurrentUnitPrice <= 0)
             {
                 throw new ArgumentException("Cantidades de Stock y/o Precio no validos para un producto.");
             }
@@ -44,7 +43,17 @@ namespace Dsw2025Tpi.Application.Services
 
             var productAdd = new Product(product.Sku, product.Name, product.Description, product.InternalCode, (int)product.CurrentUnitPrice, (int)product.StockQuantity);
             await _repository.Add(productAdd);
-            return new ProductModel.Response(productAdd.Id);
+
+            return new ProductModel.Response(
+                 productAdd.Id,
+                 productAdd.Sku!,
+                 productAdd.InternalCode!,
+                 productAdd.Name!,
+                 productAdd.Description!,
+                 productAdd.CurrentUnitPrice,
+                 productAdd.StockQuantity,
+                 productAdd.IsActive
+            );
         }
 
         public async Task<IEnumerable<Product>?> GetAllProducts()
