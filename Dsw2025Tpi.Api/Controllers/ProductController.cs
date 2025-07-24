@@ -13,6 +13,7 @@ namespace Dsw2025Tpi.Api.Controllers
 {
     [ApiController]
     [Route("api/products")]
+    [Authorize(Roles ="tester")]
     public class ProductController : ControllerBase
     {
         private readonly ProductsManagementService _productsManagementService;
