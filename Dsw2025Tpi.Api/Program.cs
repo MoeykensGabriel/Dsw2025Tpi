@@ -4,6 +4,7 @@ using Dsw2025Tpi.Data;
 using Dsw2025Tpi.Data.Repositories;
 using Dsw2025Tpi.Domain.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -66,6 +67,15 @@ public class Program
 
         builder.Services.AddHealthChecks();
 
+        // registro antes porque utiliza cookies por defecto como esquema, y luego uso jwt
+        builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        {
+            options.Password = new PasswordOptions
+            {
+                RequiredLength = 8
+            };
+        }).AddEntityFrameworkStores<AuthenticateContext>().AddDefaultTokenProviders();
+
         var jwtConfig = builder.Configuration.GetSection("Jwt");
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
         var key = Encoding.UTF8.GetBytes(keyText);
@@ -91,6 +101,13 @@ public class Program
 
        
         builder.Services.AddSingleton<JwtTokenService>();
+
+        
+
+        builder.Services.AddDbContext<AuthenticateContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        });
 
         builder.Services.AddScoped<Dsw2025TpiContext>();
         builder.Services.AddDbContext<Dsw2025TpiContext>(options =>
@@ -118,6 +135,7 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();

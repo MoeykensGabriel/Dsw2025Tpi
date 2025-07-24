@@ -17,7 +17,7 @@ namespace Dsw2025Tpi.Application.Services
         { 
             _config = config;
         }
-        public string GenerateToken(string username, string role)
+        public string GenerateToken(string username)
         {
             var jwtConfig = _config.GetSection("Jwt");
             var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("Jwt Key");
@@ -28,7 +28,7 @@ namespace Dsw2025Tpi.Application.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub,username),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                new Claim("role",role)
+                
 
             };
 
