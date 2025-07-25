@@ -70,10 +70,12 @@ public class Program
         // registro antes porque utiliza cookies por defecto como esquema, y luego uso jwt
         builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
         {
+
             options.Password = new PasswordOptions
             {
                 RequiredLength = 8
             };
+
         }).AddEntityFrameworkStores<AuthenticateContext>().AddDefaultTokenProviders();
 
         var jwtConfig = builder.Configuration.GetSection("Jwt");
