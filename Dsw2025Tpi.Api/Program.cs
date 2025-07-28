@@ -15,7 +15,7 @@ namespace Dsw2025Tpi.Api;
 public class Program
 {
 
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -101,8 +101,10 @@ public class Program
 
             }); // esquema para servicio de autenticacion
 
+
+
        
-        builder.Services.AddSingleton<JwtTokenService>();
+        builder.Services.AddScoped<JwtTokenService>();
 
         
 
@@ -121,6 +123,17 @@ public class Program
         builder.Services.AddScoped<OrdersManagementService>();
 
         var app = builder.Build();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            if (!await roleManager.RoleExistsAsync("Admin"))
+                await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+            if (!await roleManager.RoleExistsAsync("User"))
+                await roleManager.CreateAsync(new IdentityRole("User"));
+        }
 
         using (var scope = app.Services.CreateScope())
         {
