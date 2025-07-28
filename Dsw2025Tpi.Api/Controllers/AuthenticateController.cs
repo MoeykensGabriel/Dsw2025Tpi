@@ -1,5 +1,6 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,10 +24,11 @@ public class AuthenticateController : ControllerBase
         _jwtTokenService = jwtTokenService;
     }
 
-    [HttpPost("login")]
+    [HttpPost("login")] // Gabriel GabrielMoeykens7# FranciscoVicente FranciscoVicente1.
     public async Task<IActionResult> Login([FromBody] LoginModel request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
+
         if(user == null)
         {
             return Unauthorized("Usuario o Contraseña Incorrectos");
@@ -37,7 +39,7 @@ public class AuthenticateController : ControllerBase
             return Unauthorized("Usuario o Contraseña Incorrectos");
         }
 
-        var token = _jwtTokenService.GenerateToken(request.Username);
+        var token = _jwtTokenService.GenerateToken(user);
         return Ok(new {token});
     }
 
@@ -55,7 +57,17 @@ public class AuthenticateController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
+        await _userManager.AddToRoleAsync(user, "User");
         return Ok("Usuario Registrado con Exito");
+
+    }
+
+    // hago un endpoint para probar el tema de los roles
+    [Authorize(Roles = "Admin")]
+    [HttpGet("solo-admin")]
+    public IActionResult AdminEndpoint()
+    {
+        return Ok("Hola Admin");
     }
 
 }
