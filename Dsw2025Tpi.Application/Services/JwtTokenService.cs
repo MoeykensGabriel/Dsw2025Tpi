@@ -9,40 +9,48 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dsw2025Tpi.Application.Services
+namespace Dsw2025Tpi.Application.Services;
+
+public class JwtTokenService
 {
-    public class JwtTokenService
+    private readonly IConfiguration _config;
+    private readonly UserManager<IdentityUser> _userManager;
+
+    public JwtTokenService(IConfiguration config, UserManager<IdentityUser> userManager)
     {
-        private readonly IConfiguration _config;
-        public JwtTokenService(IConfiguration config) 
-        { 
-            _config = config;
-        }
-        public string GenerateToken(string username)
+        _config = config;
+        _userManager = userManager;
+    }
+    public async Task<string> GenerateToken(IdentityUser user)
+    {
+        var jwtConfig = _config.GetSection("Jwt");
+        var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("Jwt Key");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyText));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var claims = new List<Claim>
         {
-            var jwtConfig = _config.GetSection("Jwt");
-            var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("Jwt Key");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyText));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
+        };
 
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub,username),
-                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                
-
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: jwtConfig["Issuer"],
-                audience: jwtConfig["Audience"],
-                claims : claims,
-                expires: DateTime.Now.AddMinutes(double.Parse(jwtConfig["ExpireInMinutes"] ?? "60")),
-                signingCredentials: creds
-
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
         }
+
+        var token = new JwtSecurityToken(
+            issuer: jwtConfig["Issuer"],
+            audience: jwtConfig["Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(double.Parse(jwtConfig["ExpireInMinutes"] ?? "60")),
+            signingCredentials: creds
+
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+
