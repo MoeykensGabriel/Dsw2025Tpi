@@ -20,4 +20,10 @@ namespace Dsw2025Tpi.Application.Exceptions
     {
         public BadRequestException(string message):base(message) { }
     }
+
+    public class  UnauthorizedException: Exception
+    {
+        public UnauthorizedException(string message) : base{ }
+    }
+
 }
