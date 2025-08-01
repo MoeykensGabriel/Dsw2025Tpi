@@ -6,7 +6,18 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions
 {
-    internal class Exceptions
+    public class EntityNotFoundException: Exception
     {
+        public EntityNotFoundException(string message):base(message) { }
+    }
+
+    public class DuplicatedEntityException: Exception 
+    {
+        public DuplicatedEntityException(string message): base(message) { }
+    }
+
+    public class BadRequestException: Exception
+    {
+        public BadRequestException(string message):base(message) { }
     }
 }
