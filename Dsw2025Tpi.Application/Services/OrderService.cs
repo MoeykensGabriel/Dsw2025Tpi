@@ -15,43 +15,23 @@ namespace Dsw2025Tpi.Application.Services
 
         public async Task<OrderModel.Response> addOrder(OrderModel.Request order)
         {
-            if (string.IsNullOrWhiteSpace(order.ShippingAddress) || string.IsNullOrWhiteSpace(order.BillingAddress) || order.OrderItems == null)
+            if (string.IsNullOrWhiteSpace(order.ShippingAddress) ||
+                string.IsNullOrWhiteSpace(order.BillingAddress) ||
+                order.OrderItems == null)
+            {
                 throw new ArgumentException("Los datos ingresados de la orden no son válidos.");
+            }
 
             if (await _repository.First<Customer>(p => p.Id == order.CustomerId) == null)
-                throw new ArgumentException($"Cliente con el ID {order.CustomerId} no encontrado en la base de datos.");
-
-            OrderModel.OrderItemRequest itemDuplicate, itemNew;
-            var itemsOrderFinish = new List<OrderModel.OrderItemRequest>();
-
-            foreach (var q in order.OrderItems.ToList())
             {
-                if (!itemsOrderFinish.Any())
-                {
-                    itemsOrderFinish.Add(q);
-                }
-                else if (itemsOrderFinish.Exists(p => p.ProductId == q.ProductId))
-                {
-                    itemDuplicate = itemsOrderFinish.Find(p => p.ProductId == q.ProductId);
-                    itemsOrderFinish.Remove(itemDuplicate);
-
-                    var combinedQuantity = itemDuplicate.Quantity + q.Quantity;
-
-                    itemNew = new OrderModel.OrderItemRequest(
-                        itemDuplicate.ProductId,
-                        itemDuplicate.Name,
-                        itemDuplicate.Description,
-                        itemDuplicate.CurrentUnitPrice,
-                        combinedQuantity
-                    );
-
-                    itemsOrderFinish.Add(itemNew);
-                }
-                else
-                {
-                    itemsOrderFinish.Add(q);
-                }
+                throw new ArgumentException($"Cliente con el ID {order.CustomerId} no encontrado en la base de datos.");
             }
+
+            // verificar duplicados
+            var itemsOrderFinish = order.OrderItems
+                .GroupBy(i => i.ProductId)
+                .Select(g => new OrderModel.OrderItemRequest(g.Key, g.Sum(x => x.Quantity)))
+                .ToList();
 
             decimal TotalAmount = 0;
             List<OrderItem> allItems = new List<OrderItem>();
@@ -64,28 +44,24 @@ namespace Dsw2025Tpi.Application.Services
                 if (q.Quantity <= 0)
                     throw new ArgumentException("Cantidad de uno de los productos menor/igual a cero.");
 
-                var product = allProducts.FirstOrDefault(p =>
-                    p.Id == q.ProductId &&
-                    p.Name == q.Name &&
-                    p.CurrentUnitPrice == q.CurrentUnitPrice
-                );
+                var product = allProducts.FirstOrDefault(p => p.Id == q.ProductId);
 
                 if (product == null)
-                    throw new EntityNotFoundException($"Producto con ID={q.ProductId}, Nombre={q.Name}, Precio={q.CurrentUnitPrice} no encontrado.");
+                    throw new EntityNotFoundException($"Producto con ID={q.ProductId} no encontrado.");
 
                 if (!product.IsActive)
                     throw new ArgumentException("Existen productos inhabilitados en la orden.");
 
                 if (q.Quantity > product.StockQuantity)
-                    throw new ArgumentException("No hay suficiente cantidad de productos para la orden.");
+                    throw new ArgumentException($"Stock insuficiente para el producto {product.Name}.");
 
                 var itemInOrder = new OrderItem
                 {
                     SkuProd = product.Sku,
                     ProductId = product.Id,
                     Quantity = q.Quantity,
-                    UnitPrice = q.CurrentUnitPrice,
-                    Subtotal = q.CurrentUnitPrice * q.Quantity,
+                    UnitPrice = product.CurrentUnitPrice,
+                    Subtotal = product.CurrentUnitPrice * q.Quantity,
                     OrderId = orderAdd.Id
                 };
 
@@ -120,8 +96,8 @@ namespace Dsw2025Tpi.Application.Services
                 ShippingAddress: orderAdd.ShippingAddress,
                 BillingAddress: orderAdd.BillingAddress,
                 Items: allItems.Select(item => new OrderModel.OrderItemResponse(
-                    ProductId: allProducts.First(p => p.Sku == item.SkuProd).Id,
-                    Name: item.Product?.Name ?? "",
+                    ProductId: item.ProductId,
+                    Name: allProducts.First(p => p.Id == item.ProductId).Name,
                     Quantity: item.Quantity,
                     UnitPrice: item.UnitPrice,
                     Subtotal: item.Subtotal
@@ -130,7 +106,7 @@ namespace Dsw2025Tpi.Application.Services
         }
 
 
-        // no acoplar la capa del dominio, debo devolver OrderModel.Respons
+        // no acoplar la capa del dominio, debo devolver OrderModel.Response
         public async Task<IEnumerable<OrderModel.Response>> GetAllOrders()
         {
             var orders = await _repository.GetAll<Order>();

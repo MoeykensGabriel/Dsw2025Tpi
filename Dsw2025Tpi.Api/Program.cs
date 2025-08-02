@@ -124,6 +124,8 @@ public class Program
 
         var app = builder.Build();
 
+        // app.AddMiddl
+
         using (var scope = app.Services.CreateScope())
         {
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -148,6 +150,8 @@ public class Program
             app.UseSwaggerUI();
         }
 
+
+        
         app.UseHttpsRedirection();
 
         app.UseAuthentication();

@@ -24,7 +24,7 @@ public class AuthenticateController : ControllerBase
         _jwtTokenService = jwtTokenService;
     }
 
-    [HttpPost("login")] // Gabriel GabrielMoeykens7# FranciscoVicente FranciscoVicente1.
+    [HttpPost("login")] // admin: Gabriel GabrielMoeykens7# / user:FranciscoVicente FranciscoVicente1.
     public async Task<IActionResult> Login([FromBody] LoginModel request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
