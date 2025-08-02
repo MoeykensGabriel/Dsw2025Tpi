@@ -1,4 +1,5 @@
 
+using Dsw2025Tpi.Api.Middleware;
 using Dsw2025Tpi.Application.Services;
 using Dsw2025Tpi.Data;
 using Dsw2025Tpi.Data.Repositories;
@@ -19,9 +20,6 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-
-
-
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -29,7 +27,25 @@ public class Program
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "TPI-DSW2025", Version = "v1" });
 
-            
+            // para ordenar endpoint por prioridad
+            c.OrderActionsBy(apiDesc =>
+            {
+                var verbOrder = apiDesc.HttpMethod switch
+                {
+                    "GET" => 1,
+                    "POST" => 2,
+                    "PUT" => 3,
+                    "PATCH" => 4,
+                    "DELETE" => 5,
+                    _ => 6
+                };
+
+                var isById = apiDesc.RelativePath.Contains("{id}") ? 2 : 1;
+
+                return $"{verbOrder}_{isById}_{apiDesc.RelativePath}";
+            });
+
+            //  para seguridad JWT
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Description = "JWT Authorization header usando el esquema Bearer.\r\n\r\n" +
@@ -40,29 +56,28 @@ public class Program
                 Scheme = "Bearer"
             });
 
-
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
                 {
-                   {
-                        new OpenApiSecurityScheme
-                        {           
-                            Reference = new OpenApiReference
-                            {
-                             Type = ReferenceType.SecurityScheme,
-                             Id = "Bearer"
-                            },
-                        Scheme = "Bearer",
-                        Name = "Bearer",
-                        In = ParameterLocation.Header
-                        },
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "Bearer",
+                Name = "Bearer",
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
 
-                        new List<string>()
-                   }
-            });
-
-            // Para evitar conflictos con clases anidadas como record Response/Request
+            // para evitar conflictss con clases anidadas como record Response/Request
             c.CustomSchemaIds(type => type.FullName.Replace("+", "."));
         });
+
 
 
         builder.Services.AddHealthChecks();
@@ -82,7 +97,7 @@ public class Program
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
         var key = Encoding.UTF8.GetBytes(keyText);
         builder.Services.AddAuthentication(options =>
-        { 
+        {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
@@ -99,14 +114,14 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
 
-            }); // esquema para servicio de autenticacion
+            }); // esquema para servicip de autenticacion
 
 
 
-       
+
         builder.Services.AddScoped<JwtTokenService>();
 
-        
+
 
         builder.Services.AddDbContext<AuthenticateContext>(options =>
         {
@@ -124,7 +139,7 @@ public class Program
 
         var app = builder.Build();
 
-        // app.AddMiddl
+        app.UseMiddleware<ExceptionMiddleware>();
 
         using (var scope = app.Services.CreateScope())
         {
@@ -151,7 +166,7 @@ public class Program
         }
 
 
-        
+
         app.UseHttpsRedirection();
 
         app.UseAuthentication();

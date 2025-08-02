@@ -5,42 +5,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dsw2025Tpi.Application.Dtos
+namespace Dsw2025Tpi.Application.Dtos;
+
+public record OrderModel
 {
-        public record OrderModel
-        {
-            public record OrderItemRequest(
-                Guid ProductId,
-                int Quantity
-            );
+    public record OrderItemRequest(
+        Guid ProductId,
+        int Quantity
+    );
 
-            public record Request(
-                Guid CustomerId,
-                string ShippingAddress,
-                string BillingAddress,
-                List<OrderItemRequest> OrderItems,
-                string Notes
-            );
+    public record Request(
+        Guid CustomerId,
+        string ShippingAddress,
+        string BillingAddress,
+        List<OrderItemRequest> OrderItems,
+        string Notes
+    );
 
-            public record Response(
-                Guid Id,
-                OrderStatus Status,
-                decimal TotalAmount,
-                DateTime Date,
-                string ShippingAddress,
-                string BillingAddress,
-                List<OrderItemResponse> Items
-            );
+    public record Response(
+        Guid Id,
+        OrderStatus Status,
+        decimal TotalAmount,
+        DateTime Date,
+        string ShippingAddress,
+        string BillingAddress,
+        List<OrderItemResponse> Items
+    );
 
-            public record OrderItemResponse(
-                Guid ProductId,
-                string Name,
-                int Quantity,
-                decimal UnitPrice,
-                decimal Subtotal
-            );
+    public record OrderItemResponse(
+        Guid ProductId,
+        string Name,
+        int Quantity,
+        decimal UnitPrice,
+        decimal Subtotal
+    );
 
-            public record UpdateStatusRequest(string NewStatus);
-    }
-
+    public record UpdateStatusRequest(string NewStatus);
 }
+
+

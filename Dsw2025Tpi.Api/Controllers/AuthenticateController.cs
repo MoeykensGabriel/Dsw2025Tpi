@@ -67,7 +67,14 @@ public class AuthenticateController : ControllerBase
     [HttpGet("solo-admin")]
     public IActionResult AdminEndpoint()
     {
-        return Ok("Hola Admin");
+        return Ok(" Hola Admin :D ");
+    }
+
+    [Authorize(Roles = "User")]
+    [HttpGet("solo-user")]
+    public IActionResult UserEndpoint()
+    {
+        return Ok(" Hola User :D ");
     }
 
 }

@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Dsw2025Tpi.Domain.Entities;
-
 public abstract class EntityBase
 {
     [Key]

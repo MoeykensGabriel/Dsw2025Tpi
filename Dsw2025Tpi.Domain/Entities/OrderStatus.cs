@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dsw2025Tpi.Domain.Entities
+namespace Dsw2025Tpi.Domain.Entities;
+
+public enum OrderStatus
 {
-    public enum OrderStatus
-    {
-        PENDING,
-        PROCESSING,
-        SHIPPED,
-        DELIVERED,
-        CANCELLED
-    }
+    PENDING,
+    PROCESSING,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
 }
+

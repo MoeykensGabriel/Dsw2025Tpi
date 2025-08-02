@@ -8,7 +8,7 @@ public class Dsw2025TpiContext: DbContext
 {
     public DbSet<Product> Product {  get; set; }
     public DbSet<Order> Orders { get; set; }    
-    public DbSet<OrderItem> OrderItems { get; set; } 
+    public DbSet<OrderItems> OrderItems { get; set; } 
 
   
         public Dsw2025TpiContext(DbContextOptions<Dsw2025TpiContext> options) : base(options)
@@ -61,7 +61,7 @@ public class Dsw2025TpiContext: DbContext
             modelBuilder.Entity<Order>().HasKey(x => x.Id);
         });
 
-        modelBuilder.Entity<OrderItem>(t =>
+        modelBuilder.Entity<OrderItems>(t =>
         {
             t.HasKey(x => x.Id);
             t.Property(x => x.SkuProd).HasMaxLength(30);
