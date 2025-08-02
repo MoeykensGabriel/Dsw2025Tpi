@@ -100,7 +100,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Sku del producto inexistente.");
+                            throw new BadRequestException("Sku del producto inexistente.");
                         }
                     }
 
@@ -112,7 +112,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Sku del producto inexistente.");
+                            throw new BadRequestException("Sku del producto inexistente.");
                         }
                     }
 
@@ -124,7 +124,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Sku del producto inexistente.");
+                            throw new BadRequestException("Sku del producto inexistente.");
                         }
                     }
 
@@ -136,7 +136,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Sku del producto inexistente.");
+                            throw new BadRequestException("Sku del producto inexistente.");
                         }
                     }
 
@@ -148,7 +148,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Cantidad de stock menor a cero.");
+                            throw new BadRequestException("Cantidad de stock menor a cero.");
                         }
                     }
 
@@ -160,7 +160,7 @@ namespace Dsw2025Tpi.Application.Services
                         }
                         else
                         {
-                            throw new ArgumentException("Error: Valor del precio unitario menor/igual a cero.");
+                            throw new BadRequestException("Error: Valor del precio unitario menor/igual a cero.");
                         }
                     }
 
