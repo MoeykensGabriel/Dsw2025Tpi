@@ -54,7 +54,7 @@ public class Dsw2025TpiContext: DbContext
             o.Property(x => x.ShippingAddress).HasMaxLength(30);
             o.Property(x => x.Notes).HasMaxLength(30);
             o.Property(x => x.TotalAmount).HasMaxLength(30).IsRequired();
-            o.Property(x => x.Status).HasMaxLength(10);
+            o.Property(x => x.Status).IsRequired();
             o.Property(x => x.CustomerId).IsRequired();
             o.Property(x => x.Id).IsRequired().HasColumnName("id");
             o.ToTable("Orders");
