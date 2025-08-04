@@ -114,6 +114,29 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
 
+                // para la aplicacion de log de errores de autenticacion (no en la clase Middleware)
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogWarning("Autenticación fallida: {Error}", context.Exception.Message);
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogWarning("Request no autorizado a {Path}", context.Request.Path);
+                        return Task.CompletedTask;
+                    },
+                    OnForbidden = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogWarning("Request prohibido a {Path}", context.Request.Path);
+                        return Task.CompletedTask;
+                    }
+                };
+
             }); // esquema para servicip de autenticacion
 
 

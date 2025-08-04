@@ -1,15 +1,18 @@
 ﻿using System.Net;
 using System.Text.Json;
 using Dsw2025Tpi.Application.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Dsw2025Tpi.Api.Middleware;
 public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public ExceptionMiddleware(RequestDelegate next)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -20,11 +23,12 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error procesando la request: {Path}", context.Request.Path);
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         //mapear excepciones personalizadas a códigos HTTP
         var statusCode = exception switch
@@ -37,10 +41,20 @@ public class ExceptionMiddleware
             _ => (int)HttpStatusCode.InternalServerError
         };
 
-        var response = new
+        //manejar las excep que atrapa el mwr con logs 
+        if (statusCode == (int)HttpStatusCode.InternalServerError)
         {
-            message = exception.Message
-        };
+            _logger.LogError(exception,"Error inesperado en {Path}", context.Request.Path);
+        }
+        else
+        {
+            _logger.LogWarning("Excepcion controlada : {Message}", exception.Message);
+        }
+
+            var response = new
+            {
+                message = exception.Message
+            };
 
         var payload = JsonSerializer.Serialize(response);
 

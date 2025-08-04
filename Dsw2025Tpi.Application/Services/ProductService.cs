@@ -10,16 +10,19 @@ using static Dsw2025Tpi.Application.Dtos.ProductModel;
 using System.Data;
 using Dsw2025Tpi.Application.Exceptions;
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 
 namespace Dsw2025Tpi.Application.Services;
 
 public class ProductsManagementService
 {
     private readonly IRepository _repository;
+    private readonly ILogger<ProductsManagementService> _logger;
 
-    public ProductsManagementService(IRepository repository)
+    public ProductsManagementService(IRepository repository,ILogger<ProductsManagementService> logger)
     {
         _repository = repository;
+        _logger = logger;
     }
 
     public async Task<ProductModel.Response> AddProduct(ProductModel.Request product)
@@ -32,6 +35,10 @@ public class ProductsManagementService
 
         if (product.StockQuantity < 0 || product.CurrentUnitPrice <= 0)
         {
+            //prueba de implementacion de logs 
+            _logger.LogWarning(
+                "Intento de agregar un product con datos invalidos:  Stock = {Stock} _ Precio {Precio}"
+                , product.StockQuantity , product.CurrentUnitPrice);
             throw new BadRequestException("Cantidades de Stock y/o Precio no validos para un producto.");
         }
 
