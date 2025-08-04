@@ -63,13 +63,15 @@ public class ProductController : ControllerBase
         return Ok("Producto modificado con exito.");
     }
 
-    [HttpPatch]
+    [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteProduct(Guid id)
     {
         await _productsManagementService.DeleteProduct(id);
-        return Ok("Producto eliminado con exito de la base de datos.");
+        return NoContent();
+        //return Ok("Producto eliminado con exito de la base de datos.");
     }
 
     [HttpPatch("{id}")]
