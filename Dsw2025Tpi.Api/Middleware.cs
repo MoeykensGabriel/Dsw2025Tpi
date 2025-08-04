@@ -19,7 +19,7 @@ public class ExceptionMiddleware
     {
         try
         {
-            await _next(context); //para pasar al siguiente middleware
+            await _next(context); // para pasar al siguiente middleware
         }
         catch (Exception ex)
         {
@@ -30,7 +30,7 @@ public class ExceptionMiddleware
 
     private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        //mapear excepciones personalizadas a códigos HTTP
+        // mapear excepciones personalizadas a códigos HTTP
         var statusCode = exception switch
         {
             BadRequestException => (int)HttpStatusCode.BadRequest,
@@ -41,7 +41,7 @@ public class ExceptionMiddleware
             _ => (int)HttpStatusCode.InternalServerError
         };
 
-        //manejar las excep que atrapa el mwr con logs 
+        // manejar las excep que atrapa el mwr con logs 
         if (statusCode == (int)HttpStatusCode.InternalServerError)
         {
             _logger.LogError(exception,"Error inesperado en {Path}", context.Request.Path);

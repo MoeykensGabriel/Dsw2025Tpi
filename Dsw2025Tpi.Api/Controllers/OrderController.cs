@@ -36,15 +36,14 @@ public class OrderController : ControllerBase
         return Created($"/api/orders/{order.Id}", order);
     }
 
-    [HttpDelete("{id}")]
+    [HttpPatch("{id}/status")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeleteOrder(Guid id)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] string newStatus)
     {
-        await _ordersManagementService.DeleteOrder(id);
-        return NoContent();
-        //return Ok("Orden eliminada exitosamente de la base de datos.");
+        await _ordersManagementService.UpdateOrderStatus(id, newStatus);
+        return Ok($"Se modifico el estado de la orden {id} a {newStatus}");
     }
 }
 
