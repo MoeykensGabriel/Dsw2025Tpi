@@ -20,7 +20,7 @@ public class ProductsManagementService
     private readonly IRepository _repository;
     private readonly ILogger<ProductsManagementService> _logger;
 
-    public ProductsManagementService(IRepository repository,ILogger<ProductsManagementService> logger)
+    public ProductsManagementService(IRepository repository, ILogger<ProductsManagementService> logger)
     {
         _repository = repository;
         _logger = logger;
@@ -40,7 +40,7 @@ public class ProductsManagementService
             //prueba de implementacion de logs 
             _logger.LogWarning(
                 "Intento de agregar un product con datos invalidos:  Stock = {Stock} _ Precio {Precio}"
-                , product.StockQuantity , product.CurrentUnitPrice);
+                , product.StockQuantity, product.CurrentUnitPrice);
             throw new BadRequestException("Cantidades de Stock y/o Precio no validos para un producto.");
         }
 
@@ -73,9 +73,9 @@ public class ProductsManagementService
             throw new EntityNotFoundException("No hay productos cargados.");
 
         _logger.LogInformation("Se listaron {Count} productos", products.Count());
-        
+
         return products;
-        
+
     }
 
     public async Task<Product?> GetProductById(Guid id)
@@ -91,17 +91,17 @@ public class ProductsManagementService
         }
     }
 
-    public async Task UpdateProduct(Guid id, ProductModel.Request product)
+    public async Task<ProductModel.Response> UpdateProduct(Guid id, ProductModel.Request product)
     {
         var productById = await _repository.GetById<Product>(id);
 
         if (productById == null)
             throw new EntityNotFoundException("Producto a actualizar No Cargado");
 
-        if (await _repository.First<Product>(p => p.Sku == productById.Sku && p.Id != id) != null)
+        if (await _repository.First<Product>(p => p.Sku == product.Sku && p.Id != id) != null)
             throw new DuplicatedEntityException($"Producto con el Sku={product.Sku} a modificar ya esta asociado a otro producto");
 
-        if(product.Sku != null)
+        if (product.Sku != null)
         {
             if (!string.IsNullOrWhiteSpace(product.Sku))
                 productById.Sku = product.Sku;
@@ -109,7 +109,7 @@ public class ProductsManagementService
                 throw new BadRequestException("Sku del producto no existe");
         }
 
-        if(product.Name != null)
+        if (product.Name != null)
         {
             if (!string.IsNullOrWhiteSpace(product.Name))
                 productById.Name = product.Name;
@@ -151,8 +151,20 @@ public class ProductsManagementService
 
         await _repository.Update<Product>(productById);
 
-        _logger.LogInformation("Producto con el id={Id} actualizado correctamente ", productById);
+        _logger.LogInformation("Producto con el id={Id} actualizado correctamente ", productById.Id);
 
+        return new ProductModel.Response
+            (
+             productById.Id,
+             productById.Sku!,
+             productById.InternalCode!,
+             productById.Name!,
+             productById.Description!,
+             productById.CurrentUnitPrice,
+             productById.StockQuantity,
+             productById.IsActive
+
+            );
     }
 
     public async Task DeleteProduct(Guid id)

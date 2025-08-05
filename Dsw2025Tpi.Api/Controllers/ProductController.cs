@@ -57,10 +57,10 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductModel.Request data)
+    public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductModel.Request product)
     {
-        await _productsManagementService.UpdateProduct(id, data);
-        return Ok("Producto modificado con exito.");
+        var updateProduct = await _productsManagementService.UpdateProduct(id, product);
+        return Ok(updateProduct);
     }
 
     [HttpDelete("{id}")]
