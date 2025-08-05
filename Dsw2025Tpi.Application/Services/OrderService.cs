@@ -21,20 +21,11 @@ public class OrdersManagementService
         if (string.IsNullOrWhiteSpace(order.ShippingAddress) ||
             string.IsNullOrWhiteSpace(order.BillingAddress) ||
             order.OrderItems == null)
-        {
-            
-            _logger.LogWarning("Se ingresaron datos invalidos en la creacion de una Orden:" +
-             " {OrderS}, {OrderB} , {OrderItems}", order.ShippingAddress, order.BillingAddress, order.OrderItems);
-
             throw new BadRequestException("Los datos ingresados de la orden no son válidos.");
-        }
-
+        
         if (await _repository.First<Customer>(p => p.Id == order.CustomerId) == null)
-        {
-            _logger.LogWarning("Se ingreso una orden con id de cliente no encontrado: {CustomerId}", order.CustomerId);
             throw new EntityNotFoundException($"Cliente con el ID {order.CustomerId} no encontrado en la base de datos.");
-        }
-
+        
         // verificar duplicados
         var itemsOrderFinish = order.OrderItems
             .GroupBy(i => i.ProductId)
@@ -50,36 +41,19 @@ public class OrdersManagementService
         foreach (var q in itemsOrderFinish)
         {
             if (q.Quantity <= 0)
-            {
-                _logger.LogWarning("Se intento ingresar una cantidad no valida: {Quantity}",q.Quantity);
                 throw new BadRequestException("Cantidad de uno de los productos menor/igual a cero.");
-            }
                
-
             var product = allProducts.FirstOrDefault(p => p.Id == q.ProductId);
 
             if (product == null)
-            {
-                _logger.LogWarning("Intento de agregar a la orden un producto con Id inexistente: {Id}", product.Id);
                 throw new EntityNotFoundException($"Producto con ID={q.ProductId} no encontrado.");
-            }
-                
-
+            
             if (!product.IsActive)
-            {
-                _logger.LogWarning("Intento de agregar a la orden un producto:" +
-                    " {Id} Deshabilitado: {ProdStatus}", product.Id,product.IsActive);
                 throw new ConflictException("Existen productos inhabilitados en la orden.");
-            }
-                
-
+            
             if (q.Quantity > product.StockQuantity)
-            {
-                _logger.LogWarning("Intento de agregar a la orden una cantidad mayor al stock de {ProdN}: {ProdQ} > {ProdS}", product.Name, q.Quantity, product.StockQuantity);
                 throw new ConflictException($"Stock insuficiente para el producto {product.Name}.");
-            }
-                
-
+            
             var itemInOrder = new OrderItems
             {
                 SkuProd = product.Sku,
@@ -130,19 +104,14 @@ public class OrdersManagementService
         );
     }
 
-
     // no acoplar la capa del dominio, debo devolver OrderModel.Response
     public async Task<IEnumerable<OrderModel.Response>> GetAllOrders()
     {
         var orders = await _repository.GetAll<Order>();
 
         if (orders == null || !orders.Any()) 
-        {
-            _logger.LogWarning("No se encontraron ordenes cargadas y/o disponibles");
             throw new EntityNotFoundException("No hay órdenes registradas.");
-        }
-            
-
+        
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
         _logger.LogInformation("Se listaron {Count} ordenes", orders.Count());
@@ -192,19 +161,12 @@ public class OrdersManagementService
     {
         var order = await _repository.GetById<Order>(id);
         if (order == null)
-        {
-            _logger.LogWarning(" Intento de actualizar una orden con id inexistente: {Id}",id);
             throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
-        }
-            
-
+        
         if (!Enum.TryParse<OrderStatus>(newStatus, true, out var parsedStatus))
-        {
-            _logger.LogWarning(" Intento de actualizar una orden con estado invalido: {NewStatus}",newStatus);
             throw new BadRequestException($"Estado invalido: {newStatus}");
-        }
+        
             
-
         order.Status = parsedStatus;
         await _repository.Update(order);
         _logger.LogInformation(" Estado de la Order {OrderId} actualizado a {NewStatus}",order.Id,order.Status);
