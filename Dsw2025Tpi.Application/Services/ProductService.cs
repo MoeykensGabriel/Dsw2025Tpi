@@ -11,6 +11,7 @@ using System.Data;
 using Dsw2025Tpi.Application.Exceptions;
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
+using Dsw2025Tpi.Data.Migrations;
 
 namespace Dsw2025Tpi.Application.Services;
 
@@ -30,6 +31,7 @@ public class ProductsManagementService
         if (string.IsNullOrWhiteSpace(product.Sku) || string.IsNullOrWhiteSpace(product.InternalCode) ||
             string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Description))
         {
+            _logger.LogWarning("Intento de agregar un producto con datos vacios");
             throw new BadRequestException("Faltan datos del producto a llenar.");
         }
 
@@ -67,14 +69,13 @@ public class ProductsManagementService
     {
         IEnumerable<Product> products = await _repository.GetAll<Product>();
 
-        if (products == null)
-        {
-            throw new EntityNotFoundException("Ningun producto cargado/disponible.");
-        }
-        else
-        {
-            return products;
-        }
+        if (products == null || !products.Any())
+            throw new EntityNotFoundException("No hay productos cargados.");
+
+        _logger.LogInformation("Se listaron {Count} productos", products.Count());
+        
+        return products;
+        
     }
 
     public async Task<Product?> GetProductById(Guid id)
@@ -94,94 +95,64 @@ public class ProductsManagementService
     {
         var productById = await _repository.GetById<Product>(id);
 
-        if (productById != null)
+        if (productById == null)
+            throw new EntityNotFoundException("Producto a actualizar No Cargado");
+
+        if (await _repository.First<Product>(p => p.Sku == productById.Sku && p.Id != id) != null)
+            throw new DuplicatedEntityException($"Producto con el Sku={product.Sku} a modificar ya esta asociado a otro producto");
+
+        if(product.Sku != null)
         {
-            if (await _repository.First<Product>(p => p.Sku == product.Sku && p.Id != id) == null)
-            {
-
-                if (product.Sku != null)
-                {
-                    if (!(string.IsNullOrWhiteSpace(product.Sku)))
-                    {
-                        productById.Sku = product.Sku;
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Sku del producto inexistente.");
-                    }
-                }
-
-                if (product.Name != null)
-                {
-                    if (!(string.IsNullOrWhiteSpace(product.Name)))
-                    {
-                        productById.Name = product.Name;
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Sku del producto inexistente.");
-                    }
-                }
-
-                if (product.InternalCode != null)
-                {
-                    if (!(string.IsNullOrWhiteSpace(product.InternalCode)))
-                    {
-                        productById.InternalCode = product.InternalCode;
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Sku del producto inexistente.");
-                    }
-                }
-
-                if (product.Description != null)
-                {
-                    if (!(string.IsNullOrWhiteSpace(product.Description)))
-                    {
-                        productById.Description = product.Description;
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Sku del producto inexistente.");
-                    }
-                }
-
-                if (product.StockQuantity != null)
-                {
-                    if (!(product.StockQuantity < 0))
-                    {
-                        productById.StockQuantity = (int)product.StockQuantity;
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Cantidad de stock menor a cero.");
-                    }
-                }
-
-                if (product.CurrentUnitPrice != null)
-                {
-                    if (!(product.CurrentUnitPrice <= 0))
-                    {
-                        productById.CurrentUnitPrice = (decimal)product.CurrentUnitPrice;
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Error: Valor del precio unitario menor/igual a cero.");
-                    }
-                }
-
-                await _repository.Update<Product>(productById);
-            }
+            if (!string.IsNullOrWhiteSpace(product.Sku))
+                productById.Sku = product.Sku;
             else
-            {
-                throw new DuplicatedEntityException($"Producto con el Sku a modificar ( {product.Sku} ) encontrado en otro producto existente.");
-            }
+                throw new BadRequestException("Sku del producto no existe");
         }
-        else
+
+        if(product.Name != null)
         {
-            throw new EntityNotFoundException("Producto a actualizar no cargado/disponible.");
+            if (!string.IsNullOrWhiteSpace(product.Name))
+                productById.Name = product.Name;
+            else
+                throw new BadRequestException("Nombre del producto no existe");
         }
+
+        if (product.InternalCode != null)
+        {
+            if (!string.IsNullOrWhiteSpace(product.InternalCode))
+                productById.InternalCode = product.InternalCode;
+            else
+                throw new BadRequestException("Codigo interno del producto no existe");
+        }
+
+        if (product.Description != null)
+        {
+            if (!string.IsNullOrWhiteSpace(product.Description))
+                productById.Description = product.Description;
+            else
+                throw new BadRequestException("Descripcion del producto no existe");
+        }
+
+        if (product.StockQuantity != null)
+        {
+            if (product.StockQuantity >= 0)
+                productById.StockQuantity = (int)product.StockQuantity;
+            else
+                throw new BadRequestException("Cantidad de stock menor a cero.");
+        }
+
+        if (product.CurrentUnitPrice != null)
+        {
+            if (product.CurrentUnitPrice > 0)
+                productById.CurrentUnitPrice = (decimal)product.CurrentUnitPrice;
+            else
+                throw new BadRequestException("Error: Valor del precio unitario menor/igual a cero.");
+        }
+
+        await _repository.Update<Product>(productById);
+
+        _logger.LogInformation("Producto con el id={Id} actualizado correctamente ", productById);
+
     }
 
     public async Task DeleteProduct(Guid id)
