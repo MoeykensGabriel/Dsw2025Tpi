@@ -20,9 +20,11 @@ public class OrderController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetAllOrders()
+    public async Task<IActionResult> GetAllOrders(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 8 )
     {
-        var orders = await _ordersManagementService.GetAllOrders();
+        var orders = await _ordersManagementService.GetAllOrders(pageNumber,pageSize);
         return Ok(orders);
     }
 

@@ -105,16 +105,23 @@ public class OrdersManagementService
     }
 
     // no acoplar la capa del dominio, debo devolver OrderModel.Response
-    public async Task<IEnumerable<OrderModel.Response>> GetAllOrders()
+    public async Task<IEnumerable<OrderModel.Response>> GetAllOrders(
+        int pageNumber = 1, int pageSize = 8)
     {
-        var orders = await _repository.GetAll<Order>();
+        var ordersQ = await _repository.GetAll<Order>();
 
-        if (orders == null || !orders.Any()) 
+        if (ordersQ == null || !ordersQ.Any()) 
             throw new EntityNotFoundException("No hay órdenes registradas.");
         
+        var skip = (pageNumber - 1) * pageSize;
+        var orders = ordersQ.Skip(skip).Take(pageSize); //orders es la lista ya PAGINADA
+
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
-        _logger.LogInformation("Se listaron {Count} ordenes", orders.Count());
+
+        _logger.LogInformation("Se listaron {Count} ordenes" +
+            " en pagina {pNumber} con tamaño de pagina {pSize}",orders.Count(),pageNumber, pageSize );
+        
 
         var responses = orders.Select(order =>
         {
