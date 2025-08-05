@@ -30,28 +30,23 @@ public class ProductsManagementService
     {
         if (string.IsNullOrWhiteSpace(product.Sku) || string.IsNullOrWhiteSpace(product.InternalCode) ||
             string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Description))
-        {
-            _logger.LogWarning("Intento de agregar un producto con datos vacios");
             throw new BadRequestException("Faltan datos del producto a llenar.");
-        }
 
         if (product.StockQuantity < 0 || product.CurrentUnitPrice <= 0)
-        {
-            //prueba de implementacion de logs 
-            _logger.LogWarning(
-                "Intento de agregar un product con datos invalidos:  Stock = {Stock} _ Precio {Precio}"
-                , product.StockQuantity, product.CurrentUnitPrice);
             throw new BadRequestException("Cantidades de Stock y/o Precio no validos para un producto.");
-        }
 
         var productFound = await _repository.First<Product>(p => p.Sku == product.Sku);
-        if (productFound != null)
-        {
-            throw new DuplicatedEntityException($"Producto con Sku {product.Sku} ya existente.");
-        }
 
-        var productAdd = new Product(product.Sku, product.Name, product.Description, product.InternalCode, (int)product.CurrentUnitPrice, (int)product.StockQuantity);
+        if (productFound != null)
+            throw new DuplicatedEntityException($"Producto con Sku {product.Sku} ya existe.");
+
+        var productAdd = new Product(product.Sku, product.Name, product.Description,
+            product.InternalCode, (int)product.CurrentUnitPrice, (int)product.StockQuantity);
+
         await _repository.Add(productAdd);
+
+        _logger.LogInformation("Se creo un producto con: ID={Id}, nombre={Nombre}, SKU={Sku}",
+            productAdd.Id,productAdd.Name,productAdd.Sku);
 
         return new ProductModel.Response(
              productAdd.Id,
