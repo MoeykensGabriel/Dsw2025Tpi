@@ -108,22 +108,21 @@ public class OrdersManagementService
     public async Task<IEnumerable<OrderModel.Response>> GetAllOrders(
         int pageNumber = 1, int pageSize = 8)
     {
-        var ordersQ = await _repository.GetAll<Order>();
+        var orders = await _repository.GetAll<Order>();
 
-        if (ordersQ == null || !ordersQ.Any()) 
+        if (orders == null || !orders.Any()) 
             throw new EntityNotFoundException("No hay órdenes registradas.");
         
-        var skip = (pageNumber - 1) * pageSize;
-        var orders = ordersQ.Skip(skip).Take(pageSize); //orders es la lista ya PAGINADA
+        var skip = (pageNumber - 1) * pageSize; // algoritmo para tomar la cant de orders
+        var ordersPag = orders.Skip(skip).Take(pageSize); // ordersPag = lista ya PAGINADA
+
+        _logger.LogInformation("Se listaron {Count} ordenes" +
+            " en pagina {pNumber} con tamaño de pagina {pSize}",ordersPag.Count(),pageNumber, pageSize );
 
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
 
-        _logger.LogInformation("Se listaron {Count} ordenes" +
-            " en pagina {pNumber} con tamaño de pagina {pSize}",orders.Count(),pageNumber, pageSize );
-        
-
-        var responses = orders.Select(order =>
+        var responses = ordersPag.Select(order =>
         {
             var items = orderItems
                 .Where(i => i.OrderId == order.Id)
