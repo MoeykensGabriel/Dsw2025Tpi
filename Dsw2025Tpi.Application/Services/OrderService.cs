@@ -15,7 +15,6 @@ public class OrdersManagementService
         _repository = repository;
         _logger = logger;
     }
-
     public async Task<OrderModel.Response> addOrder(OrderModel.Request order)
     {
         if (string.IsNullOrWhiteSpace(order.ShippingAddress) ||
@@ -172,7 +171,6 @@ public class OrdersManagementService
         if (!Enum.TryParse<OrderStatus>(newStatus, true, out var parsedStatus))
             throw new BadRequestException($"Estado invalido: {newStatus}");
         
-            
         order.Status = parsedStatus;
         await _repository.Update(order);
         _logger.LogInformation(" Estado de la Order {OrderId} actualizado a {NewStatus}",order.Id,order.Status);

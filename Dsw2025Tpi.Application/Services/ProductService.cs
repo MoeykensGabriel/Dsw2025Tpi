@@ -70,7 +70,6 @@ public class ProductsManagementService
         _logger.LogInformation("Se listaron {Count} productos", products.Count());
 
         return products;
-
     }
 
     public async Task<Product?> GetProductById(Guid id)
