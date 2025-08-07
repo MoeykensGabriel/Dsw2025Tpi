@@ -15,7 +15,6 @@ namespace Dsw2025Tpi.Api;
 
 public class Program
 {
-
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +22,7 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
+
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "TPI-DSW2025", Version = "v1" });
@@ -78,8 +78,6 @@ public class Program
             c.CustomSchemaIds(type => type.FullName.Replace("+", "."));
         });
 
-
-
         builder.Services.AddHealthChecks();
 
         // registro antes porque utiliza cookies por defecto como esquema, y luego uso jwt
@@ -96,6 +94,7 @@ public class Program
         var jwtConfig = builder.Configuration.GetSection("Jwt");
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
         var key = Encoding.UTF8.GetBytes(keyText);
+
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -140,11 +139,7 @@ public class Program
             }); // esquema para servicip de autenticacion
 
 
-
-
         builder.Services.AddScoped<JwtTokenService>();
-
-
 
         builder.Services.AddDbContext<AuthenticateContext>(options =>
         {
@@ -187,8 +182,6 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
-
 
         app.UseHttpsRedirection();
 
