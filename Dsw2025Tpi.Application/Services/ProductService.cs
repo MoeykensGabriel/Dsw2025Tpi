@@ -60,16 +60,20 @@ public class ProductsManagementService
         );
     }
 
-    public async Task<IEnumerable<Product>?> GetAllProducts()
+    public async Task<IEnumerable<Product>?> GetAllProducts(int pageSize = 8, int pageNumber = 1)
     {
         IEnumerable<Product> products = await _repository.GetAll<Product>();
 
         if (products == null || !products.Any())
             throw new EntityNotFoundException("No hay productos cargados.");
 
-        _logger.LogInformation("Se listaron {Count} productos", products.Count());
+        var skip = (pageNumber - 1) * pageSize;
+        var productsPag = products.Skip(skip).Take(pageSize);
 
-        return products;
+        _logger.LogInformation("Se listaron {Count} ordenes" +
+            " en pagina {pNumber} con tamaño de pagina {pSize}", productsPag.Count(), pageNumber, pageSize);
+
+        return productsPag;
     }
 
     public async Task<Product?> GetProductById(Guid id)

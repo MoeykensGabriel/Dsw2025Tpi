@@ -27,9 +27,11 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
-    public async Task<IActionResult> GetAllProducts()
+    public async Task<IActionResult> GetAllProducts(
+        [FromQuery] int pageSize=8,
+        [FromQuery] int pageNumber = 1)
     {
-        var products = await _productsManagementService.GetAllProducts();
+        var products = await _productsManagementService.GetAllProducts(pageSize,pageNumber);
         return Ok(products);
     }
 

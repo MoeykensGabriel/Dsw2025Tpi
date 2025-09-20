@@ -47,7 +47,6 @@ public class JwtTokenService
             claims: claims,
             expires: DateTime.Now.AddMinutes(double.Parse(jwtConfig["ExpireInMinutes"] ?? "60")),
             signingCredentials: creds
-
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
