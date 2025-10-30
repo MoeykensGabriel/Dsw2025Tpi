@@ -31,7 +31,7 @@ public class OrderController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles = "User")]
+    [Authorize]
     public async Task<IActionResult> AddOrder([FromBody] OrderModel.Request data)
     {
         var order = await _ordersManagementService.addOrder(data);

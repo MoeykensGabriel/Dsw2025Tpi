@@ -80,6 +80,13 @@ public class Program
 
         builder.Services.AddHealthChecks();
 
+        builder.Services.AddControllers()
+    .       AddJsonOptions(options =>
+        {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Mantiene los nombres tal cual
+        });
+
         // registro antes porque utiliza cookies por defecto como esquema, y luego uso jwt
         builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
         {
@@ -155,7 +162,27 @@ public class Program
         builder.Services.AddScoped<ProductsManagementService>();
         builder.Services.AddScoped<OrdersManagementService>();
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+
         var app = builder.Build();
+
+        app.Use(async (context, next) =>
+        {
+            Console.WriteLine($" Request: {context.Request.Method} {context.Request.Path}");
+            Console.WriteLine($" Content-Type: {context.Request.ContentType}");
+            await next();
+            Console.WriteLine($" Response: {context.Response.StatusCode}");
+        });
+
 
         app.UseMiddleware<ExceptionMiddleware>();
 
@@ -184,6 +211,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseCors();
 
         app.UseAuthentication();
         app.UseAuthorization();
