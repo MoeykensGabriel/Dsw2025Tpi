@@ -18,7 +18,7 @@ public class Dsw2025TpiContext: DbContext
     public void LoadData(Dsw2025TpiContext context)
     {
         context.Database.ExecuteSqlRaw("TRUNCATE TABLE Customers");
-
+        //var fileName = @"C:\Users\gabom\Desktop\dswTpiBack\Dsw2025Tpi\Dsw2025Tpi.Data\Sources\customers.json";
         var fileName = @"C:\Users\luchi\Desktop\Dsw2025Tpi\Dsw2025Tpi.Data\Sources\customers.json";
         var read = File.ReadAllText(fileName);
         var data = JsonSerializer.Deserialize<List<Customer>>(read);
