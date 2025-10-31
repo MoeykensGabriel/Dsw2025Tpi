@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿
+using System.Net;
 using System.Text.Json;
 using Dsw2025Tpi.Application.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -43,17 +44,17 @@ public class ExceptionMiddleware
         // manejar las excep que atrapa el mwr con logs 
         if (statusCode == (int)HttpStatusCode.InternalServerError)
         {
-            _logger.LogError(exception,"Error inesperado en {Path}", context.Request.Path);
+            _logger.LogError(exception, "Error inesperado en {Path}", context.Request.Path);
         }
         else
         {
             _logger.LogWarning("Excepcion controlada : {Message}", exception.Message);
         }
 
-            var response = new
-            {
-                message = exception.Message
-            };
+        var response = new
+        {
+            message = exception.Message
+        };
 
         var payload = JsonSerializer.Serialize(response);
 
@@ -63,4 +64,3 @@ public class ExceptionMiddleware
         return context.Response.WriteAsync(payload);
     }
 }
-

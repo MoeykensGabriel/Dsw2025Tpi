@@ -12,7 +12,6 @@ public class AuthenticateController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
-
     private readonly JwtTokenService _jwtTokenService;
 
     public AuthenticateController(UserManager<IdentityUser> userManager,
@@ -24,23 +23,53 @@ public class AuthenticateController : ControllerBase
         _jwtTokenService = jwtTokenService;
     }
 
-    [HttpPost("login")] // admin: Gabriel GabrielMoeykens7# / user:FranciscoVicente FranciscoVicente1.
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel request)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
-
-        if(user == null)
+        try
         {
-            return Unauthorized("Usuario o Contraseña Incorrectos");
-        }
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password,false);
-        if(!result.Succeeded)
-        {
-            return Unauthorized("Usuario o Contraseña Incorrectos");
-        }
+            var user = await _userManager.FindByNameAsync(request.Username);
 
-        var token = _jwtTokenService.GenerateToken(user);
-        return Ok(new {token});
+            if (user == null)
+            {
+                Console.WriteLine("User not found");
+                return Unauthorized(new
+                {
+                    code = "INVALID_CREDENTIALS",
+                    message = "Usuario o Contraseña Incorrectos"
+                });
+            }
+
+            Console.WriteLine($"User found: {user.UserName}");
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+
+            if (!result.Succeeded)
+            {
+                Console.WriteLine("Password incorrect");
+                return Unauthorized(new
+                {
+                    code = "INVALID_CREDENTIALS",
+                    message = "Usuario o Contraseña Incorrectos"
+                });
+            }
+
+            Console.WriteLine("Generating token...");
+            var token = await _jwtTokenService.GenerateToken(user);
+
+            return Ok(new { token });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");
+
+            return StatusCode(500, new
+            {
+                code = "INTERNAL_ERROR",
+                message = "Error interno del servidor"
+            });
+        }
     }
 
     [HttpPost("register")]
@@ -76,7 +105,6 @@ public class AuthenticateController : ControllerBase
     {
         return Ok(" Hola User :D ");
     }
-
 
 }
 

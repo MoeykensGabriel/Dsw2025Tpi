@@ -22,16 +22,16 @@ public class OrderController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllOrders(
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 8 )
+        [FromQuery] int pageSize = 8)
     {
-        var orders = await _ordersManagementService.GetAllOrders(pageNumber,pageSize);
+        var orders = await _ordersManagementService.GetAllOrders(pageNumber, pageSize);
         return Ok(orders);
     }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles = "User")]
+    [Authorize]
     public async Task<IActionResult> AddOrder([FromBody] OrderModel.Request data)
     {
         var order = await _ordersManagementService.addOrder(data);
@@ -48,5 +48,3 @@ public class OrderController : ControllerBase
         return Ok($"Se modifico el estado de la orden {id} a {newStatus}");
     }
 }
-
-
