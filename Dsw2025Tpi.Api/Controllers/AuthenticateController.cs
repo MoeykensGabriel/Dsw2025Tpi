@@ -89,7 +89,13 @@ public class AuthenticateController : ControllerBase
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        {
+            // 1. Unimos todos los errores (ya traducidos por SpanishIdentityErrorDescriber) en un solo string
+            var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
+
+            // 2. Devolvemos un objeto JSON simple con el mensaje
+            return BadRequest(new { message = errorMessages });
+        }
 
         //Validamos el rol que llega. Si es inválido o vacío, asigna 'User'
         var role = "User"; // Rol por defecto
