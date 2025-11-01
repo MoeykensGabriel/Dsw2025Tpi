@@ -86,7 +86,14 @@ public class AuthenticateController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        await _userManager.AddToRoleAsync(user, "User");
+        //Validamos el rol que llega. Si es inválido o vacío, asigna 'User'
+        var role = "User"; // Rol por defecto
+        if (!string.IsNullOrEmpty(model.Role) && (model.Role == "Admin" || model.Role == "User"))
+        {
+            role = model.Role;
+        }
+
+        await _userManager.AddToRoleAsync(user, role);
         return Ok("Usuario Registrado con Exito");
 
     }
