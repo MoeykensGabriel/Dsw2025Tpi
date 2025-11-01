@@ -206,8 +206,16 @@ public class Program
 
         using (var scope = app.Services.CreateScope())
         {
+            // 1. Obtenemos el ContentRootPath (la carpeta donde se ejecuta la API)
+            var contentRoot = app.Environment.ContentRootPath;
+
+            // 2. Combinamos la ruta base con la ruta relativa de tu archivo JSON
+            //    Esto crea una ruta segura como: C:\...\Dsw2025Tpi.Api\DataSeed\customers.json
+            var jsonFilePath = Path.Combine(contentRoot, "DataSeed", "customers.json");
+
+            // 3. Pasamos la ruta dinámica al método LoadData
             var context = scope.ServiceProvider.GetRequiredService<Dsw2025TpiContext>();
-            context.LoadData(context);
+            context.LoadData(context, jsonFilePath);
         }
 
         // Configure the HTTP request pipeline.
