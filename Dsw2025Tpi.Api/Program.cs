@@ -100,7 +100,10 @@ public class Program
             };
             options.User.RequireUniqueEmail = true;
 
-        }).AddEntityFrameworkStores<AuthenticateContext>().AddDefaultTokenProviders();
+        })
+            .AddEntityFrameworkStores<AuthenticateContext>()
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<SpanishIdentityErrorDescriber>();
 
         var jwtConfig = builder.Configuration.GetSection("Jwt");
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
