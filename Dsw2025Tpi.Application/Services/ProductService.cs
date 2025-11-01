@@ -41,7 +41,7 @@ public class ProductsManagementService
             throw new DuplicatedEntityException($"Producto con Sku {product.Sku} ya existe.");
 
         var productAdd = new Product(product.Sku, product.Name, product.Description,
-            product.InternalCode, (int)product.CurrentUnitPrice, (int)product.StockQuantity);
+             product.InternalCode, product.CurrentUnitPrice, product.StockQuantity);
 
         await _repository.Add(productAdd);
 

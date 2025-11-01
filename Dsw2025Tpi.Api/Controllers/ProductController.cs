@@ -26,6 +26,7 @@ public class ProductController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
     [Authorize]
     public async Task<IActionResult> GetAllProducts(
         [FromQuery] int pageSize=8,

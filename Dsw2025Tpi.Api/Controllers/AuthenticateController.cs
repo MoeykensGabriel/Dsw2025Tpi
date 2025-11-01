@@ -56,8 +56,13 @@ public class AuthenticateController : ControllerBase
 
             Console.WriteLine("Generating token...");
             var token = await _jwtTokenService.GenerateToken(user);
-
-            return Ok(new { token });
+            var userResponse = new
+            {
+                Id = user.Id,
+                Username = user.UserName,
+                Email = user.Email
+            };
+            return Ok(new { token = token, user = userResponse });
         }
         catch (Exception ex)
         {
