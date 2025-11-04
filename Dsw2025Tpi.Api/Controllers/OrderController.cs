@@ -22,9 +22,11 @@ public class OrderController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllOrders(
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 8)
+        [FromQuery] int pageSize = 8,
+        [FromQuery] string? status = null,
+        [FromQuery] string? search = null) 
     {
-        var orders = await _ordersManagementService.GetAllOrders(pageNumber, pageSize);
+        var orders = await _ordersManagementService.GetAllOrders(pageNumber, pageSize, status, search);
         return Ok(orders);
     }
 

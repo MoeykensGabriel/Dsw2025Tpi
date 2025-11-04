@@ -105,13 +105,41 @@ public class OrdersManagementService
 
     // no acoplar la capa del dominio, debo devolver OrderModel.Response
     public async Task<IEnumerable<OrderModel.Response>> GetAllOrders(
-        int pageNumber = 1, int pageSize = 8)
+        int pageNumber = 1, int pageSize = 8, string? status = null, string? search = null)
     {
         var orders = await _repository.GetAll<Order>();
 
         if (orders == null || !orders.Any()) 
             throw new EntityNotFoundException("No hay órdenes registradas.");
-        
+        if (!string.IsNullOrEmpty(status))
+        {
+            // Intentamos convertir el string "PENDING" en el Enum OrderStatus.PENDING
+            if (Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
+            {
+                // Filtramos en memoria usando LINQ
+                orders = orders.Where(o => o.Status == parsedStatus);
+            }
+            else
+            {
+                // Si el estado no es válido (ej. "cualquiercosa"), devolvemos una lista vacía
+                // o podríamos lanzar un BadRequestException
+                return new List<OrderModel.Response>();
+            }
+        }
+
+        // 2. Aplicar filtro de Búsqueda (si se provee)
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchTerm = search.ToLowerInvariant().Trim();
+            orders = orders.Where(o =>
+                // Buscamos si el ID de la orden (como string) contiene el término
+                o.Id.ToString().ToLowerInvariant().Contains(searchTerm) ||
+                // Buscamos si el ID del cliente (como string) contiene el término
+                o.CustomerId.ToString().ToLowerInvariant().Contains(searchTerm)
+            );
+        }
+
+
         var skip = (pageNumber - 1) * pageSize; // algoritmo para tomar la cant de orders
         var ordersPag = orders.Skip(skip).Take(pageSize); // ordersPag = lista ya PAGINADA
 
@@ -152,16 +180,6 @@ public class OrdersManagementService
         return responses;
     }
 
-   /* metodo deshabilitado temporalmente
-    public async Task DeleteOrder(Guid id)
-    {
-        var orderById = await _repository.GetById<Order>(id);
-
-        await _repository.Delete(orderById
-                                 ?? throw new EntityNotFoundException(
-                                 "Orden a inhabilitar No Cargado/Disponible"));
-    }
-   */
     public async Task<OrderModel.Response> UpdateOrderStatus(Guid id, string newStatus)
     {
         var order = await _repository.GetById<Order>(id);

@@ -15,6 +15,7 @@ public class Dsw2025TpiContext: DbContext
     {
     }
 
+
     public void LoadData(Dsw2025TpiContext context, string jsonFilePath)
     {
         context.Database.ExecuteSqlRaw("TRUNCATE TABLE Customers");
