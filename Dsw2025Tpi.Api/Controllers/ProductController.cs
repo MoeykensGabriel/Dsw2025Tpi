@@ -24,8 +24,6 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
     [Authorize]
     public async Task<IActionResult> GetAllProducts(
@@ -33,8 +31,10 @@ public class ProductController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] string? search = null)
     {
-        var products = await _productsManagementService.GetAllProducts(pageSize,pageNumber,search);
-        return Ok(products);
+        //El servicio ahora devuelve un objeto PagedResult<Product>
+        var pagedResult = await _productsManagementService.GetAllProducts(pageSize, pageNumber, search);
+        //Devolvemos el objeto completo
+        return Ok(pagedResult);
     }
 
     [HttpGet("{id}")]

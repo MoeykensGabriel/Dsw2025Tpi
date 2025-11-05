@@ -59,7 +59,7 @@ public class ProductsManagementService
         );
     }
 
-    public async Task<IEnumerable<Product>?> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search=null)
+    public async Task<PagedResult<Product>> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search = null)
     {
         IEnumerable<Product> products = await _repository.GetAll<Product>();
 
@@ -75,6 +75,12 @@ public class ProductsManagementService
                 (p.Description != null && p.Description.ToLowerInvariant().Contains(searchTerm))
             );
         }
+        //Calcular el total ANTES de paginar
+        var totalCount = products.Count();
+
+        //Calcular totalPages
+        // (Usamos Math.Ceiling para redondear hacia arriba)
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
         var skip = (pageNumber - 1) * pageSize;
         var productsPag = products.Skip(skip).Take(pageSize);
@@ -82,7 +88,12 @@ public class ProductsManagementService
         _logger.LogInformation("Se listaron {Count} productos" +
             " en pagina {pNumber} con tamaño de pagina {pSize}", productsPag.Count(), pageNumber, pageSize);
 
-        return productsPag;
+        return new PagedResult<Product>(
+            Items: productsPag,
+            TotalPages: totalPages,
+            CurrentPage: pageNumber,
+            TotalCount: totalCount
+        );
     }
 
     public async Task<Product?> GetProductById(Guid id)
