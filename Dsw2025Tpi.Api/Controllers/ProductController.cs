@@ -30,9 +30,10 @@ public class ProductController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetAllProducts(
         [FromQuery] int pageSize=8,
-        [FromQuery] int pageNumber = 1)
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] string? search = null)
     {
-        var products = await _productsManagementService.GetAllProducts(pageSize,pageNumber);
+        var products = await _productsManagementService.GetAllProducts(pageSize,pageNumber,search);
         return Ok(products);
     }
 
@@ -74,7 +75,6 @@ public class ProductController : ControllerBase
     {
         await _productsManagementService.DeleteProduct(id);
         return NoContent();
-        //return Ok("Producto eliminado con exito de la base de datos.");
     }
 
     [HttpPatch("{id}")]

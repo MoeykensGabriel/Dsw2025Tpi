@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
 using Dsw2025Tpi.Application.Dtos;
-using static Dsw2025Tpi.Application.Dtos.ProductModel;
 using System.Data;
 using Dsw2025Tpi.Application.Exceptions;
 using System.ComponentModel;
@@ -60,17 +59,27 @@ public class ProductsManagementService
         );
     }
 
-    public async Task<IEnumerable<Product>?> GetAllProducts(int pageSize = 8, int pageNumber = 1)
+    public async Task<IEnumerable<Product>?> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search=null)
     {
         IEnumerable<Product> products = await _repository.GetAll<Product>();
 
         if (products == null || !products.Any())
             throw new EntityNotFoundException("No hay productos cargados.");
+        //Logica de filtrado
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchTerm = search.ToLowerInvariant().Trim();
+            products = products.Where(p =>
+               (p.Name != null && p.Name.ToLowerInvariant().Contains(searchTerm)) ||
+                (p.Sku != null && p.Sku.ToLowerInvariant().Contains(searchTerm)) ||
+                (p.Description != null && p.Description.ToLowerInvariant().Contains(searchTerm))
+            );
+        }
 
         var skip = (pageNumber - 1) * pageSize;
         var productsPag = products.Skip(skip).Take(pageSize);
 
-        _logger.LogInformation("Se listaron {Count} ordenes" +
+        _logger.LogInformation("Se listaron {Count} productos" +
             " en pagina {pNumber} con tamaño de pagina {pSize}", productsPag.Count(), pageNumber, pageSize);
 
         return productsPag;
