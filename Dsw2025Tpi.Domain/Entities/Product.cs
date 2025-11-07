@@ -16,9 +16,11 @@ namespace Dsw2025Tpi.Domain.Entities
         public int StockQuantity { get;  set; }
         public bool IsActive { get;  set; } = true;
 
+        public string? ImageUrl { get; set; }
+
         public Product() { }
 
-        public Product(string sku, string name, string description, string internalCode, decimal currentUnitPrice, int stockQuantity) : base()
+        public Product(string sku, string name, string description, string internalCode, decimal currentUnitPrice, int stockQuantity,string? imageUrl = null) : base()
         {
             this.Sku = sku;
             this.Name = name;
@@ -26,10 +28,11 @@ namespace Dsw2025Tpi.Domain.Entities
             this.InternalCode = internalCode;
             this.CurrentUnitPrice = currentUnitPrice;
             this.StockQuantity = stockQuantity;
+            this.ImageUrl = imageUrl;
             this.IsActive = true;
         }
 
-        public Product(string sku, string name, string description, string internalCode, decimal currentUnitPrice, int stockQuantity, Guid id) : base(id)
+        public Product(string sku, string name, string description, string internalCode, decimal currentUnitPrice, int stockQuantity, Guid id,string? imageUrl = null) : base(id)
         {
             this.Sku = sku;
             this.Name = name;
@@ -37,6 +40,7 @@ namespace Dsw2025Tpi.Domain.Entities
             this.InternalCode = internalCode;
             this.CurrentUnitPrice = currentUnitPrice;
             this.StockQuantity = stockQuantity;
+            this.ImageUrl = imageUrl;
             this.IsActive = true;
         }
 

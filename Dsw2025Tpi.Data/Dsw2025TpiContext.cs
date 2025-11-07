@@ -41,6 +41,7 @@ public class Dsw2025TpiContext: DbContext
             p.Property(x => x.InternalCode).HasMaxLength(30);
             p.Property(x => x.CurrentUnitPrice).HasMaxLength(30);
             p.Property(x => x.StockQuantity).HasMaxLength(30).IsRequired();
+            p.Property(x => x.ImageUrl).HasMaxLength(1024);
             p.Property(x => x.Id).IsRequired().HasColumnName("id");
             p.ToTable("Products");
             modelBuilder.Entity<Product>().HasKey(x => x.Id);

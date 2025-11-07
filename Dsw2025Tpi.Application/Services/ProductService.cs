@@ -55,7 +55,8 @@ public class ProductsManagementService
              productAdd.Description!,
              productAdd.CurrentUnitPrice,
              productAdd.StockQuantity,
-             productAdd.IsActive
+             productAdd.IsActive,
+             productAdd.ImageUrl
         );
     }
 
@@ -167,6 +168,11 @@ public class ProductsManagementService
                 throw new BadRequestException("Error: Valor del precio unitario menor/igual a cero.");
         }
 
+        if (product.ImageUrl != null)
+        {
+            productById.ImageUrl = product.ImageUrl;
+        }
+
         await _repository.Update<Product>(productById);
 
         _logger.LogInformation("Producto con el id={Id} actualizado correctamente ", productById.Id);
@@ -180,7 +186,8 @@ public class ProductsManagementService
              productById.Description!,
              productById.CurrentUnitPrice,
              productById.StockQuantity,
-             productById.IsActive
+             productById.IsActive,
+             productById.ImageUrl
 
             );
     }
