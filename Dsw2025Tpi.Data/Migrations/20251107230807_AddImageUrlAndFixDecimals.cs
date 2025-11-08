@@ -5,7 +5,7 @@
 namespace Dsw2025Tpi.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class AddImageUrlToProduct : Migration
+    public partial class AddImageUrlAndFixDecimals : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -13,7 +13,8 @@ namespace Dsw2025Tpi.Data.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "ImageUrl",
                 table: "Products",
-                type: "nvarchar(max)",
+                type: "nvarchar(1024)",
+                maxLength: 1024,
                 nullable: true);
         }
 

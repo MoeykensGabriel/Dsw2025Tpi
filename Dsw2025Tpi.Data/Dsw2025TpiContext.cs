@@ -39,7 +39,7 @@ public class Dsw2025TpiContext: DbContext
             p.Property(x => x.Name).HasMaxLength(50);
             p.Property(x => x.Description).HasMaxLength(80);
             p.Property(x => x.InternalCode).HasMaxLength(30);
-            p.Property(x => x.CurrentUnitPrice).HasMaxLength(30);
+            p.Property(x => x.CurrentUnitPrice).HasColumnType("decimal(18, 2)");
             p.Property(x => x.StockQuantity).HasMaxLength(30).IsRequired();
             p.Property(x => x.ImageUrl).HasMaxLength(1024);
             p.Property(x => x.Id).IsRequired().HasColumnName("id");
@@ -54,7 +54,7 @@ public class Dsw2025TpiContext: DbContext
             o.Property(x => x.Date).HasMaxLength(30);
             o.Property(x => x.ShippingAddress).HasMaxLength(30);
             o.Property(x => x.Notes).HasMaxLength(30);
-            o.Property(x => x.TotalAmount).HasMaxLength(30).IsRequired();
+            o.Property(x => x.TotalAmount).HasColumnType("decimal(18, 2)").IsRequired();
             o.Property(x => x.Status).IsRequired();
             o.Property(x => x.CustomerId).IsRequired();
             o.Property(x => x.Id).IsRequired().HasColumnName("id");
@@ -67,7 +67,8 @@ public class Dsw2025TpiContext: DbContext
             t.HasKey(x => x.Id);
             t.Property(x => x.SkuProd).HasMaxLength(30);
             t.Property(x => x.Quantity).IsRequired();
-            t.Property(x => x.Subtotal);
+            t.Property(x => x.Subtotal).HasColumnType("decimal(18, 2)");
+            t.Property(x => x.UnitPrice).HasColumnType("decimal(18, 2)");
             t.Property(x => x.OrderId);
             t.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId); 
             t.Property(x => x.Id).IsRequired().HasColumnName("id");

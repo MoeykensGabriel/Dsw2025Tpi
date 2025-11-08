@@ -135,7 +135,8 @@ namespace Dsw2025Tpi.Data.Migrations
                         .HasColumnType("nvarchar(80)");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
 
                     b.Property<string>("InternalCode")
                         .HasMaxLength(30)

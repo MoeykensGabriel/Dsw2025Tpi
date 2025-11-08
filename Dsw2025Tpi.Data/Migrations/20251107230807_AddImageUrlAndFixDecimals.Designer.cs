@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dsw2025Tpi.Data.Migrations
 {
     [DbContext(typeof(Dsw2025TpiContext))]
-    [Migration("20251107004814_AddImageUrlToProduct")]
-    partial class AddImageUrlToProduct
+    [Migration("20251107230807_AddImageUrlAndFixDecimals")]
+    partial class AddImageUrlAndFixDecimals
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -138,7 +138,8 @@ namespace Dsw2025Tpi.Data.Migrations
                         .HasColumnType("nvarchar(80)");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
 
                     b.Property<string>("InternalCode")
                         .HasMaxLength(30)

@@ -56,11 +56,14 @@ public class AuthenticateController : ControllerBase
 
             Console.WriteLine("Generating token...");
             var token = await _jwtTokenService.GenerateToken(user);
+            // Obtenemos los roles del usuario
+            var roles = await _userManager.GetRolesAsync(user);
             var userResponse = new
             {
                 Id = user.Id,
                 Username = user.UserName,
-                Email = user.Email
+                Email = user.Email,
+                Roles = roles  // Añadimos los roles a la respuesta
             };
             return Ok(new { token = token, user = userResponse });
         }
@@ -98,13 +101,25 @@ public class AuthenticateController : ControllerBase
         }
 
         //Validamos el rol que llega. Si es inválido o vacío, asigna 'User'
-        var role = "User"; // Rol por defecto
-        if (!string.IsNullOrEmpty(model.Role) && (model.Role == "Admin" || model.Role == "User"))
+        var roleToAdd = "User"; // Rol por defecto
+        if (!string.IsNullOrEmpty(model.Role) && model.Role == "Admin")
         {
-            role = model.Role;
+            roleToAdd = "Admin";
+        }
+        // Forzamos la exclusión mutua
+        // Si vamos a agregar "Admin", nos aseguramos de quitar "User"
+        if (roleToAdd == "Admin")
+        {
+            await _userManager.RemoveFromRoleAsync(user, "User");
+        }
+        // Si vamos a agregar "User", nos aseguramos de quitar "Admin"
+        else
+        {
+            await _userManager.RemoveFromRoleAsync(user, "Admin");
         }
 
-        await _userManager.AddToRoleAsync(user, role);
+        // Agregamos el rol deseado
+        await _userManager.AddToRoleAsync(user, roleToAdd);
         return Ok("Usuario Registrado con Exito");
 
     }
