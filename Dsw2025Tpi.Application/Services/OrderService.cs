@@ -182,6 +182,35 @@ public class OrdersManagementService
         return responses;
     }
 
+    public async Task<OrderModel.Response> GetOrderById(Guid id)
+    {
+        var order = await _repository.GetById<Order>(id);
+        if (order == null)
+            throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
+
+        // Reutilizamos la lógica que ya teníamos para buscar items y productos
+        var items = await _repository.Where<OrderItems>(i => i.OrderId == order.Id);
+        var products = await _repository.GetAll<Product>();
+
+        return new OrderModel.Response(
+            Id: order.Id,
+            CustomerId: order.CustomerId,
+            Status: order.Status,
+            TotalAmount: order.TotalAmount,
+            Date: order.Date,
+            ShippingAddress: order.ShippingAddress,
+            BillingAddress: order.BillingAddress,
+            Items: items.Select(item => new OrderModel.OrderItemResponse(
+                // Usamos FirstOrDefault para ser más seguros
+                ProductId: products.FirstOrDefault(p => p.Sku == item.SkuProd)?.Id ?? Guid.Empty,
+                Name: products.FirstOrDefault(p => p.Sku == item.SkuProd)?.Name ?? "Producto no encontrado",
+                Quantity: item.Quantity,
+                UnitPrice: item.UnitPrice,
+                Subtotal: item.Subtotal
+            )).ToList()
+        );
+    }
+
     public async Task<OrderModel.Response> UpdateOrderStatus(Guid id, string newStatus)
     {
         var order = await _repository.GetById<Order>(id);
@@ -207,8 +236,8 @@ public class OrdersManagementService
             ShippingAddress: order.ShippingAddress,
             BillingAddress: order.BillingAddress,
             Items: items.Select(item => new OrderModel.OrderItemResponse(
-                ProductId: products.First(p => p.Sku == item.SkuProd).Id,
-                Name: products.First(p => p.Sku == item.SkuProd).Name!,
+                ProductId: products.FirstOrDefault(p => p.Sku == item.SkuProd)?.Id ?? Guid.Empty,
+                Name: products.First(p => p.Sku == item.SkuProd).Name! ?? "Producto no encontrado",
                 Quantity: item.Quantity,
                 UnitPrice: item.UnitPrice,
                 Subtotal: item.Subtotal

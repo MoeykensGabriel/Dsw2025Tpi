@@ -17,6 +17,15 @@ public class OrderController : ControllerBase
         _ordersManagementService = ordersManagementService;
     }
 
+    [HttpGet("{id}")]
+    [Authorize] // Protegido para que solo usuarios logueados (admin o user) puedan ver
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetOrderById(Guid id)
+    {
+        var order = await _ordersManagementService.GetOrderById(id);
+        return Ok(order);
+    }
+
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Roles = "Admin")]
