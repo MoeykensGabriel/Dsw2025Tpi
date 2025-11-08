@@ -24,6 +24,7 @@ public record OrderModel
 
     public record Response(
         Guid Id,
+        Guid CustomerId,
         OrderStatus Status,
         decimal TotalAmount,
         DateTime Date,

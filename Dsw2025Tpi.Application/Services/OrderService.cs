@@ -88,6 +88,7 @@ public class OrdersManagementService
 
         return new OrderModel.Response(
             Id: orderAdd.Id,
+            CustomerId: orderAdd.CustomerId,
             Status: orderAdd.Status,
             TotalAmount: orderAdd.TotalAmount,
             Date: orderAdd.Date,
@@ -168,6 +169,7 @@ public class OrdersManagementService
 
             return new OrderModel.Response(
                 Id: order.Id,
+                CustomerId: order.CustomerId,
                 Status: order.Status,
                 TotalAmount: order.TotalAmount,
                 Date: order.Date,
@@ -198,6 +200,7 @@ public class OrdersManagementService
 
         return new OrderModel.Response(
             Id: order.Id,
+            CustomerId: order.CustomerId,
             Status: order.Status,
             TotalAmount: order.TotalAmount,
             Date: order.Date,
