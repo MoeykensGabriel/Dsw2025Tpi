@@ -97,6 +97,47 @@ public class ProductsManagementService
         );
     }
 
+    public async Task<PagedResult<Product>> GetActiveProducts(int pageSize=8, int pageNumber=1, string? search = null)
+    {
+        IEnumerable<Product> products = await _repository.GetFiltered<Product>(p => p.IsActive);
+
+
+        if (products == null || !products.Any())
+            throw new EntityNotFoundException("No hay productos cargados.");
+
+        //Logica de filtrado
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchTerm = search.ToLowerInvariant().Trim();
+            products = products.Where(p =>
+               (p.Name != null && p.Name.ToLowerInvariant().Contains(searchTerm)) ||
+                (p.Sku != null && p.Sku.ToLowerInvariant().Contains(searchTerm)) ||
+                (p.Description != null && p.Description.ToLowerInvariant().Contains(searchTerm))
+            );
+        }
+
+        
+        //Calcular el total ANTES de paginar
+        var totalCount = products.Count();
+
+        //Calcular totalPages
+        // (Usamos Math.Ceiling para redondear hacia arriba)
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var skip = (pageNumber - 1) * pageSize;
+        var productsPag = products.Skip(skip).Take(pageSize);
+
+        _logger.LogInformation("Se listaron {Count} productos ACTIVOS" +
+            " en pagina {pNumber} con tamaño de pagina {pSize}", productsPag.Count(), pageNumber, pageSize);
+
+        return new PagedResult<Product>(
+            Items: productsPag,
+            TotalPages: totalPages,
+            CurrentPage: pageNumber,
+            TotalCount: totalCount
+        );
+    }
+
     public async Task<Product?> GetProductById(Guid id)
     {
         var productById = await _repository.GetById<Product>(id);

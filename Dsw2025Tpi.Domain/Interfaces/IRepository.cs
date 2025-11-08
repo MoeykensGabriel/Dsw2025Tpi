@@ -14,4 +14,5 @@ public interface IRepository
     Task<T> Delete<T>(T entity) where T : EntityBase;
 
     Task<IEnumerable<T>> Where<T>(Expression<Func<T, bool>> predicate) where T : class;
+
 }
