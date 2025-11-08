@@ -244,4 +244,49 @@ public class OrdersManagementService
             )).ToList()
         );
     }
+    public async Task DeleteOrder(Guid id)
+    {
+        var order = await _repository.GetById<Order>(id);
+        if (order == null)
+            throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
+
+        // Verificamos si debemos reponer el stock
+        // Solo reponemos si la orden estaba activa (PENDING, PROCESSING, SHIPPED)
+        bool shouldRestock = order.Status != OrderStatus.CANCELLED && order.Status != OrderStatus.DELIVERED;
+
+        var items = await _repository.Where<OrderItems>(i => i.OrderId == id);
+
+        if (shouldRestock)
+        {
+            // Obtenemos los IDs de los productos para buscarlos
+            var productIds = items.Select(i => i.ProductId).ToList();
+            var products = await _repository.Where<Product>(p => productIds.Contains(p.Id));
+
+            foreach (var item in items)
+            {
+                var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+                if (product != null)
+                {
+                    // Devolvemos el stock al producto
+                    product.StockQuantity += item.Quantity;
+                    await _repository.Update(product);
+                }
+                // Borramos el item de la orden
+                await _repository.Delete(item);
+            }
+        }
+        else
+        {
+            // Si la orden ya estaba CANCELLED o DELIVERED, no reponemos stock
+            // Solo borramos los items
+            foreach (var item in items)
+            {
+                await _repository.Delete(item);
+            }
+        }
+
+        // Finalmente, borramos la orden
+        await _repository.Delete(order);
+        _logger.LogInformation("Orden {OrderId} y sus items fueron eliminados. Reposición de stock: {Restock}", id, shouldRestock);
+    }
 }

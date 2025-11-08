@@ -58,4 +58,14 @@ public class OrderController : ControllerBase
         await _ordersManagementService.UpdateOrderStatus(id, newStatus);
         return Ok($"Se modifico el estado de la orden {id} a {newStatus}");
     }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteOrder(Guid id)
+    {
+        await _ordersManagementService.DeleteOrder(id);
+        return NoContent(); // 204 No Content es la respuesta estándar para un DELETE exitoso
+    }
 }
