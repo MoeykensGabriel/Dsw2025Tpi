@@ -36,7 +36,7 @@ public class Dsw2025TpiContext: DbContext
         modelBuilder.Entity<Product>(p =>
         {
             p.Property(x => x.Sku).HasMaxLength(30);
-            p.Property(x => x.Name).HasMaxLength(50);
+            p.Property(x => x.Name).HasMaxLength(100);
             p.Property(x => x.Description).HasMaxLength(255);
             p.Property(x => x.InternalCode).HasMaxLength(30);
             p.Property(x => x.CurrentUnitPrice).HasColumnType("decimal(18, 2)");
