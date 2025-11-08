@@ -17,6 +17,15 @@ public class OrderController : ControllerBase
         _ordersManagementService = ordersManagementService;
     }
 
+    [HttpGet("{id}")]
+    [Authorize] // Protegido para que solo usuarios logueados (admin o user) puedan ver
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetOrderById(Guid id)
+    {
+        var order = await _ordersManagementService.GetOrderById(id);
+        return Ok(order);
+    }
+
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize(Roles = "Admin")]
@@ -48,5 +57,15 @@ public class OrderController : ControllerBase
     {
         await _ordersManagementService.UpdateOrderStatus(id, newStatus);
         return Ok($"Se modifico el estado de la orden {id} a {newStatus}");
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteOrder(Guid id)
+    {
+        await _ordersManagementService.DeleteOrder(id);
+        return NoContent(); // 204 No Content es la respuesta estándar para un DELETE exitoso
     }
 }

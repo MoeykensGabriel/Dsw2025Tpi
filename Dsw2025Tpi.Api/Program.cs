@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Dsw2025Tpi.Api;
 
@@ -151,6 +152,16 @@ public class Program
                 };
 
             }); // esquema para servicip de autenticacion
+
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.PropertyNamingPolicy = null; // Mantiene los nombres tal cual
+
+                // Esto convierte los Enums (como OrderStatus) en strings (ej: "PENDING")
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+             });
 
 
         builder.Services.AddScoped<JwtTokenService>();
