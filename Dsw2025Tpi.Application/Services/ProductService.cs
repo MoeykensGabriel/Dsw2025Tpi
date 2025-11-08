@@ -40,7 +40,7 @@ public class ProductsManagementService
             throw new DuplicatedEntityException($"Producto con Sku {product.Sku} ya existe.");
 
         var productAdd = new Product(product.Sku, product.Name, product.Description,
-             product.InternalCode, product.CurrentUnitPrice, product.StockQuantity);
+             product.InternalCode, product.CurrentUnitPrice, product.StockQuantity, product.ImageUrl);
 
         await _repository.Add(productAdd);
 
@@ -170,7 +170,7 @@ public class ProductsManagementService
 
         if (product.ImageUrl != null)
         {
-            productById.ImageUrl = product.ImageUrl;
+            productById.ImageUrl = string.IsNullOrWhiteSpace(product.ImageUrl) ? null : product.ImageUrl;
         }
 
         await _repository.Update<Product>(productById);
