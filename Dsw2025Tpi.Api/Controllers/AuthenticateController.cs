@@ -124,6 +124,34 @@ public class AuthenticateController : ControllerBase
 
     }
 
+    [HttpPost("register-customer")]
+    [AllowAnonymous] // Público
+    public async Task<IActionResult> RegisterCustomer([FromBody] RegisterModel model)
+    {
+        var user = new IdentityUser
+        {
+            UserName = model.Username,
+            Email = model.Email
+        };
+
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (!result.Succeeded)
+        {
+            var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
+            return BadRequest(new { message = errorMessages });
+        }
+
+        // Forzamos el rol "User"
+        var roleToAdd = "User";
+
+        // Nos aseguramos de que no tenga el rol "Admin" (exclusión)
+        await _userManager.RemoveFromRoleAsync(user, "Admin");
+        await _userManager.AddToRoleAsync(user, roleToAdd);
+
+        return Ok("Usuario Registrado con Exito");
+    }
+
     // hago un endpoint para probar el tema de los roles
     [Authorize(Roles = "Admin")]
     [HttpGet("solo-admin")]
