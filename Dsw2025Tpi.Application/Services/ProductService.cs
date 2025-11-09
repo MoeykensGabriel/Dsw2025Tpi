@@ -61,6 +61,21 @@ public class ProductsManagementService
         );
     }
 
+    public async Task<IEnumerable<Product>> GetProducts()
+    {
+        IEnumerable<Product> products = await _repository.GetAll<Product>();
+
+        if (products == null || !products.Any())
+            throw new EntityNotFoundException("No hay productos cargados.");
+      
+        //total de products
+        
+
+        _logger.LogInformation("Se listaron {Count} productos ", products.Count() );
+
+        return products;
+    }
+
     public async Task<PagedResult<Product>> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search = null)
     {
         IEnumerable<Product> products = await _repository.GetAll<Product>();
