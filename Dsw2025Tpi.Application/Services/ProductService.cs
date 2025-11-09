@@ -69,11 +69,32 @@ public class ProductsManagementService
             throw new EntityNotFoundException("No hay productos cargados.");
       
         //total de products
-        
 
         _logger.LogInformation("Se listaron {Count} productos ", products.Count() );
 
         return products;
+    }
+
+    public async Task<ProductSummaryModel> GetProductSummary()
+    {
+        var products = await _repository.GetAll<Product>();
+
+        if (products == null || !products.Any())
+            throw new EntityNotFoundException("No hay productos cargados.");
+
+        var total = products.Count();
+        var activos = products.Count(p => p.IsActive);
+        var inactivos = total - activos;
+        var bajoStock = products.Count(p => p.StockQuantity < 5);
+
+        return new ProductSummaryModel
+        {
+            Total = total,
+            Activos = activos,
+            Inactivos = inactivos,
+            BajoStock = bajoStock
+        };
+
     }
 
     public async Task<PagedResult<Product>> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search = null)

@@ -46,6 +46,15 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("summary")]
+    [AllowAnonymous]
+    [Authorize]
+    public async Task<IActionResult> GetSummary()
+    {
+        var summary = await _productsManagementService.GetProductSummary();
+        return Ok(summary);
+    }
+
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
