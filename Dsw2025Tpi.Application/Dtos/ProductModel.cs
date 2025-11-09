@@ -11,7 +11,7 @@ public record ProductModel
 {
     public record Request(
     string Sku, string InternalCode, string Name, string Description, decimal CurrentUnitPrice,
-    int StockQuantity, string? ImageUrl
+    int StockQuantity, string? ImageUrl, bool IsActive
     );
 
     public record Response(

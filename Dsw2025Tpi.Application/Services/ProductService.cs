@@ -42,6 +42,7 @@ public class ProductsManagementService
         var productAdd = new Product(product.Sku, product.Name, product.Description,
              product.InternalCode, product.CurrentUnitPrice, product.StockQuantity, product.ImageUrl);
 
+        productAdd.IsActive = product.IsActive;
         await _repository.Add(productAdd);
 
         _logger.LogInformation("Se creo un producto con: ID={Id}, nombre={Nombre}, SKU={Sku}",
@@ -213,6 +214,9 @@ public class ProductsManagementService
         {
             productById.ImageUrl = string.IsNullOrWhiteSpace(product.ImageUrl) ? null : product.ImageUrl;
         }
+
+        // Actualizamos el estado Activo/Inactivo
+        productById.IsActive = product.IsActive;
 
         await _repository.Update<Product>(productById);
 
