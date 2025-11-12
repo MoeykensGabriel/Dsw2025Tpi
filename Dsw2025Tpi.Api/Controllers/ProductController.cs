@@ -29,10 +29,11 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> GetAllProducts(
         [FromQuery] int pageSize=8,
         [FromQuery] int pageNumber = 1,
-        [FromQuery] string? search = null)
+        [FromQuery] string? search = null,
+        [FromQuery] string? status = null)
     {
         //El servicio ahora devuelve un objeto PagedResult<Product>
-        var pagedResult = await _productsManagementService.GetAllProducts(pageSize, pageNumber, search);
+        var pagedResult = await _productsManagementService.GetAllProducts(pageSize, pageNumber, search, status);
         //Devolvemos el objeto completo
         return Ok(pagedResult);
     }

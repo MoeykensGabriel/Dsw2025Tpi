@@ -97,12 +97,25 @@ public class ProductsManagementService
 
     }
 
-    public async Task<PagedResult<Product>> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search = null)
+    public async Task<PagedResult<Product>> GetAllProducts(int pageSize = 8, int pageNumber = 1, string? search = null, string? status = null)
     {
         IEnumerable<Product> products = await _repository.GetAll<Product>();
 
         if (products == null || !products.Any())
             throw new EntityNotFoundException("No hay productos cargados.");
+        //Basado en la referencia que nos dio el profe vicente chibilisco
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (status.Equals("active", StringComparison.OrdinalIgnoreCase))
+            {
+                products = products.Where(p => p.IsActive);
+            }
+            else if (status.Equals("inactive", StringComparison.OrdinalIgnoreCase))
+            {
+                products = products.Where(p => !p.IsActive);
+            }
+            // Si es "all" o cualquier otra cosa, no se filtra (se muestran todos)
+        }
         //Logica de filtrado
         if (!string.IsNullOrEmpty(search))
         {
