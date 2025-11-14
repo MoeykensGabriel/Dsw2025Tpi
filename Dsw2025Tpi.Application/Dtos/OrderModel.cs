@@ -9,6 +9,15 @@ namespace Dsw2025Tpi.Application.Dtos;
 
 public record OrderModel
 {
+    public record OrdersSummaryResponse(
+    int TotalOrders,
+    int PendingOrders,
+    int ProcessingOrders,
+    int ShippedOrders,
+    int DeliveredOrders,
+    int CancelledOrders
+    );
+
     public record OrderItemRequest(
         Guid ProductId,
         int Quantity

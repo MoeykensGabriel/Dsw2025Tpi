@@ -182,6 +182,40 @@ public class OrdersManagementService
         return responses;
     }
 
+    public async Task<OrderModel.OrdersSummaryResponse> GetOrdersSummary()
+    {
+        var orders = await _repository.GetAll<Order>();
+
+        if( orders == null  || !orders.Any())
+        {
+            return new OrderModel.OrdersSummaryResponse(
+                TotalOrders: 0,
+                PendingOrders: 0,
+                ProcessingOrders: 0,
+                ShippedOrders: 0,
+                DeliveredOrders: 0,
+                CancelledOrders: 0
+                );
+            
+        }
+
+        var totalOrders = orders.Count();
+        var totalPendingOrders = orders.Count(o => o.Status == OrderStatus.PENDING);
+        var totalProcessingOrders = orders.Count(o => o.Status == OrderStatus.PROCESSING);
+        var totalDeliveredOrders = orders.Count(o => o.Status == OrderStatus.DELIVERED);
+        var totalShippedOrders = orders.Count(o => o.Status == OrderStatus.SHIPPED);
+        var totalCancelledOrders = orders.Count(o => o.Status == OrderStatus.CANCELLED);
+
+        return new OrderModel.OrdersSummaryResponse(
+                TotalOrders: totalOrders,
+                PendingOrders: totalPendingOrders,
+                ProcessingOrders: totalProcessingOrders,
+                ShippedOrders: totalShippedOrders,
+                DeliveredOrders: totalDeliveredOrders,
+                CancelledOrders: totalCancelledOrders
+                );
+    }
+
     public async Task<OrderModel.Response> GetOrderById(Guid id)
     {
         var order = await _repository.GetById<Order>(id);

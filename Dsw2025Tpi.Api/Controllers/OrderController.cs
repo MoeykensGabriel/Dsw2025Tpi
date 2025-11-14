@@ -39,6 +39,16 @@ public class OrderController : ControllerBase
         return Ok(orders);
     }
 
+    [HttpGet("summary")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetOrdersSummary()
+    {
+        var summary = await _ordersManagementService.GetOrdersSummary();
+        return Ok(summary);
+    }
+
+
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
