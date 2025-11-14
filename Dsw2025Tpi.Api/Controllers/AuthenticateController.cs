@@ -1,8 +1,11 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Services;
+using Dsw2025Tpi.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Dsw2025Tpi.Domain.Interfaces;
+using Dsw2025Tpi.Domain.Entities;
 
 namespace Dsw2025Tpi.Api.Controllers;
 
@@ -13,14 +16,18 @@ public class AuthenticateController : ControllerBase
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly JwtTokenService _jwtTokenService;
+    private readonly IRepository _repository;
 
     public AuthenticateController(UserManager<IdentityUser> userManager,
         SignInManager<IdentityUser> identityUser,
-        JwtTokenService jwtTokenService)
+        JwtTokenService jwtTokenService,
+        IRepository repository
+        )
     {
         _userManager = userManager;
         _signInManager = identityUser;
         _jwtTokenService = jwtTokenService;
+        _repository = repository;
     }
 
     [HttpPost("login")]
@@ -130,6 +137,7 @@ public class AuthenticateController : ControllerBase
     {
         var user = new IdentityUser
         {
+            Id = Guid.NewGuid().ToString(),
             UserName = model.Username,
             Email = model.Email
         };
@@ -144,6 +152,16 @@ public class AuthenticateController : ControllerBase
 
         // Forzamos el rol "User"
         var roleToAdd = "User";
+
+        // Ahora creamos el 'Customer' en la otra tabla
+        // Usamos el MISMO ID que generamos para el IdentityUser
+        var customer = new Customer
+        {
+            Id = Guid.Parse(user.Id),
+            Name = user.UserName,
+            Email = user.Email
+        };
+        await _repository.Add(customer);
 
         // Nos aseguramos de que no tenga el rol "Admin" (exclusión)
         await _userManager.RemoveFromRoleAsync(user, "Admin");
