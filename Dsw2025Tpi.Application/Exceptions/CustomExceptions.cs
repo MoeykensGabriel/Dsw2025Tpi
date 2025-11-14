@@ -21,7 +21,14 @@ public class DuplicatedEntityException : Exception
 // 400 bad request
 public class BadRequestException : Exception
 {
+    // Añadimos una propiedad pública para el código
+    public string? ErrorCode { get; }
     public BadRequestException(string message) : base(message) { }
+    // Creamos un nuevo constructor que acepte el código
+    public BadRequestException(string message, string errorCode) : base(message)
+    {
+        ErrorCode = errorCode;
+    }
 }
 
 // 401 para unauthorized

@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Dsw2025Tpi.Application.Dtos;
+using Dsw2025Tpi.Application.Exceptions;
+using Dsw2025Tpi.Data.Migrations;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
-using Dsw2025Tpi.Application.Dtos;
-using System.Data;
-using Dsw2025Tpi.Application.Exceptions;
-using System.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Dsw2025Tpi.Data.Migrations;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Services;
 
@@ -18,6 +19,10 @@ public class ProductsManagementService
 {
     private readonly IRepository _repository;
     private readonly ILogger<ProductsManagementService> _logger;
+    // Expresion regular para para el SKU del producto (entre 5 y 10 caracteres)
+    private readonly Regex _skuRegex = new Regex(@"^SKU-[a-zA-Z0-9]{5,10}$", RegexOptions.Compiled);
+    //Expresion regular para para el CODIGO UNICO del producto (entre 5 y 10 caracteres)
+    private readonly Regex _internalCodeRegex = new Regex(@"^INT-[a-zA-Z0-9]{5,10}$", RegexOptions.Compiled);
 
     public ProductsManagementService(IRepository repository, ILogger<ProductsManagementService> logger)
     {
@@ -30,6 +35,16 @@ public class ProductsManagementService
         if (string.IsNullOrWhiteSpace(product.Sku) || string.IsNullOrWhiteSpace(product.InternalCode) ||
             string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Description))
             throw new BadRequestException("Faltan datos del producto a llenar.");
+        // Validación del formato SKU
+        if (!_skuRegex.IsMatch(product.Sku))
+        {
+            throw new BadRequestException("El formato del SKU no es válido. Debe ser SKU-XXXXX.", "SKU_INVALID_FORMAT");
+        }
+        // Validación del formato CODIGO UNICO
+        if (string.IsNullOrWhiteSpace(product.InternalCode) || !_internalCodeRegex.IsMatch(product.InternalCode))
+        {
+            throw new BadRequestException("El formato del Código Interno no es válido. Debe ser INT-XXXXX (5-10 caracteres).", "INTERNALCODE_INVALID_FORMAT");
+        }
 
         if (product.StockQuantity < 0 || product.CurrentUnitPrice <= 0)
             throw new BadRequestException("Cantidades de Stock y/o Precio no validos para un producto.");
@@ -214,7 +229,14 @@ public class ProductsManagementService
         if (product.Sku != null)
         {
             if (!string.IsNullOrWhiteSpace(product.Sku))
+            {
+                // --- AÑADIR VALIDACION DE FORMATO SKU ---
+                if (!_skuRegex.IsMatch(product.Sku))
+                {
+                    throw new BadRequestException("El formato del SKU no es válido. Debe ser SKU-XXXXX.", "SKU_INVALID_FORMAT");
+                }
                 productById.Sku = product.Sku;
+            }
             else
                 throw new BadRequestException("Sku del producto no existe");
         }
@@ -230,7 +252,15 @@ public class ProductsManagementService
         if (product.InternalCode != null)
         {
             if (!string.IsNullOrWhiteSpace(product.InternalCode))
+            {
+                // --- AÑADIR VALIDACION DE FORMATO SKU ---
+                if (!_internalCodeRegex.IsMatch(product.InternalCode))
+                {
+                    throw new BadRequestException("El formato del Código Interno no es válido. Debe ser INT-XXXXX (5-10 caracteres).", "INTERNALCODE_INVALID_FORMAT");
+                }
                 productById.InternalCode = product.InternalCode;
+            }
+            
             else
                 throw new BadRequestException("Codigo interno del producto no existe");
         }
