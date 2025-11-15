@@ -170,6 +170,8 @@ public class ProductsManagementService
         if (products == null || !products.Any())
             throw new EntityNotFoundException("No hay productos cargados.");
 
+        products = products.Where(p => p.IsActive && p.StockQuantity >0);
+
         //Logica de filtrado
         if (!string.IsNullOrEmpty(search))
         {
