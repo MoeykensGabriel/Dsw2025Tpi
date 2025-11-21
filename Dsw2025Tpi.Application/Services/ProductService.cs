@@ -141,6 +141,8 @@ public class ProductsManagementService
                 (p.Description != null && p.Description.ToLowerInvariant().Contains(searchTerm))
             );
         }
+
+        products = products.OrderByDescending(p => p.CurrentUnitPrice);
         //Calcular el total ANTES de paginar
         var totalCount = products.Count();
 
@@ -162,7 +164,9 @@ public class ProductsManagementService
         );
     }
 
-    public async Task<PagedResult<Product>> GetActiveProducts(int pageSize=8, int pageNumber=1, string? search = null)
+    public async Task<PagedResult<Product>> GetActiveProducts(
+        int pageSize = 8, int pageNumber = 1,
+        string? search = null, decimal? minPrice = null, decimal? maxPrice = null)
     {
         IEnumerable<Product> products = await _repository.GetFiltered<Product>(p => p.IsActive);
 
@@ -183,7 +187,14 @@ public class ProductsManagementService
             );
         }
 
+        if (minPrice.HasValue)
+            products = products.Where(p => p.CurrentUnitPrice >= minPrice.Value);
+
+        if (maxPrice.HasValue)
+            products = products.Where(p => p.CurrentUnitPrice <= maxPrice.Value);
         
+        // ordenar por prec de mayor a menor
+        products = products.OrderByDescending(p => p.CurrentUnitPrice);
         //Calcular el total ANTES de paginar
         var totalCount = products.Count();
 
