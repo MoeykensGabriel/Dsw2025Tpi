@@ -140,6 +140,9 @@ public class OrdersManagementService
             );
         }
 
+        // ordenar de mas actual a mas antigua
+        orders = orders.OrderByDescending(o => o.Date);
+
 
         var skip = (pageNumber - 1) * pageSize; // algoritmo para tomar la cant de orders
         var ordersPag = orders.Skip(skip).Take(pageSize); // ordersPag = lista ya PAGINADA
