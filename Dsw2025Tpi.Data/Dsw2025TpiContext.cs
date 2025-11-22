@@ -18,15 +18,6 @@ public class Dsw2025TpiContext: DbContext
 
     public void LoadData(Dsw2025TpiContext context, string jsonFilePath)
     {
-        context.Database.ExecuteSqlRaw("TRUNCATE TABLE Customers");
-        var fileName = jsonFilePath;
-        var read = File.ReadAllText(fileName);
-        var data = JsonSerializer.Deserialize<List<Customer>>(read);
-        foreach (var c in data)
-        {
-            context.Add(c);
-        }
-        context.SaveChanges();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -74,16 +65,6 @@ public class Dsw2025TpiContext: DbContext
             t.Property(x => x.Id).IsRequired().HasColumnName("id");
 
             t.ToTable("OrderItems");
-        });
-
-        modelBuilder.Entity<Customer>(c =>
-        {
-            c.Property(x => x.Email).HasMaxLength(30);
-            c.Property(x => x.Name).HasMaxLength(30);
-            c.Property(x => x.PhoneNumber).HasMaxLength(20);
-            c.Property(x => x.Id).IsRequired().HasColumnName("id");
-            c.ToTable("Customers");
-            modelBuilder.Entity<Customer>().HasKey(x => x.Id);
         });
     }
 }

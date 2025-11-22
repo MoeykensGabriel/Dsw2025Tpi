@@ -22,9 +22,6 @@ public class OrdersManagementService
             order.OrderItems == null)
             throw new BadRequestException("Los datos ingresados de la orden no son válidos.");
         
-        if (await _repository.First<Customer>(p => p.Id == order.CustomerId) == null)
-            throw new EntityNotFoundException($"Cliente con el ID {order.CustomerId} no encontrado en la base de datos.");
-        
         // verificar duplicados
         var itemsOrderFinish = order.OrderItems
             .GroupBy(i => i.ProductId)

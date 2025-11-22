@@ -161,16 +161,6 @@ public class AuthenticateController : ControllerBase
         // Asignamos rol
         await _userManager.AddToRoleAsync(user, "User");
 
-
-        // CRITICO Guardamos en la tabla de Customers (Datos)
-        var customer = new Customer
-        {
-            Id = Guid.Parse(newId), 
-            Name = user.UserName,
-            Email = user.Email
-        };
-        await _repository.Add(customer);
-
         return Ok("Usuario Registrado con Exito");
     }
 
