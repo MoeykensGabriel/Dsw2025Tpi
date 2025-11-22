@@ -326,4 +326,61 @@ public class OrdersManagementService
         await _repository.Delete(order);
         _logger.LogInformation("Orden {OrderId} y sus items fueron eliminados. Reposición de stock: {Restock}", id, shouldRestock);
     }
+
+    public async Task<PagedResult<OrderModel.Response>> GetOrdersByCustomerId(Guid customerId, int pageNumber, int pageSize)
+    {
+        // Filtramos por CustomerId
+        var orders = await _repository.Where<Order>(o => o.CustomerId == customerId);
+
+        if (!orders.Any())
+            return new PagedResult<OrderModel.Response>(new List<OrderModel.Response>(), 0, pageNumber, 0);
+
+        // Ordenamos por fecha descendente (las más nuevas primero)
+        orders = orders.OrderByDescending(o => o.Date);
+
+        // Paginación
+        var totalCount = orders.Count();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        var skip = (pageNumber - 1) * pageSize;
+        var ordersPag = orders.Skip(skip).Take(pageSize);
+
+        // Obtenemos datos relacionados para armar la respuesta
+        var orderItems = await _repository.GetAll<OrderItems>();
+        var products = await _repository.GetAll<Product>();
+
+        var responses = ordersPag.Select(order =>
+        {
+            var items = orderItems
+                .Where(i => i.OrderId == order.Id)
+                .Select(item =>
+                {
+                    var product = products.FirstOrDefault(p => p.Sku == item.SkuProd);
+                    return new OrderModel.OrderItemResponse(
+                        ProductId: product?.Id ?? Guid.Empty,
+                        Name: product?.Name ?? "Producto desconocido",
+                        Quantity: item.Quantity,
+                        UnitPrice: item.UnitPrice,
+                        Subtotal: item.Subtotal
+                    );
+                }).ToList();
+
+            return new OrderModel.Response(
+                Id: order.Id,
+                CustomerId: order.CustomerId,
+                Status: order.Status,
+                TotalAmount: order.TotalAmount,
+                Date: order.Date,
+                ShippingAddress: order.ShippingAddress,
+                BillingAddress: order.BillingAddress,
+                Items: items
+            );
+        });
+
+        return new PagedResult<OrderModel.Response>(
+            Items: responses,
+            TotalPages: totalPages,
+            CurrentPage: pageNumber,
+            TotalCount: totalCount
+        );
+    }
 }

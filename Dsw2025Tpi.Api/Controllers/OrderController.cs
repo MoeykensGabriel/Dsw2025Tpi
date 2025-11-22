@@ -3,6 +3,7 @@ using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Dsw2025Tpi.Api.Controllers;
 
@@ -76,5 +77,45 @@ public class OrderController : ControllerBase
     {
         await _ordersManagementService.DeleteOrder(id);
         return NoContent(); // 204 No Content es la respuesta estándar para un DELETE exitoso
+    }
+
+    [HttpGet("my-orders")]
+    [Authorize]
+    public async Task<IActionResult> GetMyOrders(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        Guid userId = Guid.Empty;
+        bool found = false;
+
+        // 1. Filtramos SOLO los claims que sean 'NameIdentifier' ('sub' o el string largo)
+        var idClaims = User.Claims.Where(c =>
+            c.Type == ClaimTypes.NameIdentifier ||
+            c.Type == "sub" ||
+            c.Type == "id"
+        );
+
+        // 2. De esos, buscamos el que sea un GUID válido
+        foreach (var claim in idClaims)
+        {
+            if (Guid.TryParse(claim.Value, out userId))
+            {
+                found = true;
+                break; // ¡Encontramos el ID de usuario real!
+            }
+        }
+
+        if (!found)
+        {
+            return BadRequest(new
+            {
+                code = "INVALID_TOKEN",
+                message = "No se pudo encontrar un ID de usuario válido en el token."
+            });
+        }
+
+        var result = await _ordersManagementService.GetOrdersByCustomerId(userId, pageNumber, pageSize);
+
+        return Ok(result);
     }
 }

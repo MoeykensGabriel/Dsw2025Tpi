@@ -60,7 +60,12 @@ public class AuthenticateController : ControllerBase
                     message = "Usuario o Contraseña Incorrectos"
                 });
             }
-
+            if (!Guid.TryParse(user.Id, out _))
+            {
+                // Si el usuario tiene un ID viejo (como 'Coca'), lo actualizamos a un GUID
+                user.Id = Guid.NewGuid().ToString();
+                await _userManager.UpdateAsync(user);
+            }
             Console.WriteLine("Generating token...");
             var token = await _jwtTokenService.GenerateToken(user);
             // Obtenemos los roles del usuario
@@ -92,6 +97,7 @@ public class AuthenticateController : ControllerBase
     {
         var user = new IdentityUser
         {
+            Id = Guid.NewGuid().ToString(),
             UserName = model.Username,
             Email = model.Email
         };
@@ -135,9 +141,11 @@ public class AuthenticateController : ControllerBase
     [AllowAnonymous] // Público
     public async Task<IActionResult> RegisterCustomer([FromBody] RegisterModel model)
     {
+        // Generamos el ID manualmente para usarlo en ambas tablas
+        var newId = Guid.NewGuid().ToString();
         var user = new IdentityUser
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = newId,
             UserName = model.Username,
             Email = model.Email
         };
@@ -150,22 +158,18 @@ public class AuthenticateController : ControllerBase
             return BadRequest(new { message = errorMessages });
         }
 
-        // Forzamos el rol "User"
-        var roleToAdd = "User";
+        // Asignamos rol
+        await _userManager.AddToRoleAsync(user, "User");
 
-        // Ahora creamos el 'Customer' en la otra tabla
-        // Usamos el MISMO ID que generamos para el IdentityUser
+
+        // CRITICO Guardamos en la tabla de Customers (Datos)
         var customer = new Customer
         {
-            Id = Guid.Parse(user.Id),
+            Id = Guid.Parse(newId), 
             Name = user.UserName,
             Email = user.Email
         };
         await _repository.Add(customer);
-
-        // Nos aseguramos de que no tenga el rol "Admin" (exclusión)
-        await _userManager.RemoveFromRoleAsync(user, "Admin");
-        await _userManager.AddToRoleAsync(user, roleToAdd);
 
         return Ok("Usuario Registrado con Exito");
     }
