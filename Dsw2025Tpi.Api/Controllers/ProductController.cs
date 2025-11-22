@@ -67,18 +67,24 @@ public class ProductController : ControllerBase
 
     [HttpGet("active")]
     [AllowAnonymous]
-    [Authorize]
     public async Task<IActionResult> GetActiveProducts(
-        [FromQuery] int pageSize = 8,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] string? search = null)
+    [FromQuery] int pageSize = 8,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] string? search = null,
+    [FromQuery] decimal? minPrice = null,
+    [FromQuery] decimal? maxPrice = null
+)
     {
-        //El servicio ahora devuelve un objeto PagedResult<Product>
-        var pagedResult = await _productsManagementService.GetActiveProducts(pageSize, pageNumber, search);
-        //Devolvemos el objeto completo
+        var pagedResult = await _productsManagementService.GetActiveProducts(
+            pageSize,
+            pageNumber,
+            search,
+            minPrice,
+            maxPrice
+        );
+
         return Ok(pagedResult);
     }
-
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
