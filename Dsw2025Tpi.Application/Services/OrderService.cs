@@ -2,7 +2,9 @@
 using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
 
 namespace Dsw2025Tpi.Application.Services;
 
@@ -10,10 +12,16 @@ public class OrdersManagementService
 {
     private readonly IRepository _repository;
     private readonly ILogger<OrdersManagementService> _logger;
-    public OrdersManagementService(IRepository repository, ILogger<OrdersManagementService> logger)
+    private readonly UserManager<IdentityUser> _userManager;
+    public OrdersManagementService(
+    IRepository repository, 
+    ILogger<OrdersManagementService> logger,
+    UserManager<IdentityUser> userManager)
+
     {
         _repository = repository;
         _logger = logger;
+        _userManager = userManager;
     }
     public async Task<OrderModel.Response> addOrder(OrderModel.Request order)
     {
@@ -27,6 +35,9 @@ public class OrdersManagementService
             .GroupBy(i => i.ProductId)
             .Select(g => new OrderModel.OrderItemRequest(g.Key, g.Sum(x => x.Quantity)))
             .ToList();
+        
+        //buscar el user
+        var user = await _userManager.FindByIdAsync(order.CustomerId.ToString());
 
         decimal TotalAmount = 0;
         List<OrderItems> allItems = new List<OrderItems>();
@@ -83,9 +94,11 @@ public class OrdersManagementService
 
         await _repository.Add(orderAdd);
 
+
         return new OrderModel.Response(
             Id: orderAdd.Id,
             CustomerId: orderAdd.CustomerId,
+            CustomerName: user?.UserName ?? "Usuario desconocido",
             Status: orderAdd.Status,
             TotalAmount: orderAdd.TotalAmount,
             Date: orderAdd.Date,
@@ -103,54 +116,53 @@ public class OrdersManagementService
 
     // no acoplar la capa del dominio, debo devolver OrderModel.Response
     public async Task<IEnumerable<OrderModel.Response>> GetAllOrders(
-        int pageNumber = 1, int pageSize = 8, string? status = null, string? search = null)
+     int pageNumber = 1, int pageSize = 8, string? status = null, string? search = null)
     {
         var orders = await _repository.GetAll<Order>();
 
-        if (orders == null || !orders.Any()) 
+        if (orders == null || !orders.Any())
             throw new EntityNotFoundException("No hay órdenes registradas.");
+
         if (!string.IsNullOrEmpty(status))
         {
-            // Intentamos convertir el string "PENDING" en el Enum OrderStatus.PENDING
             if (Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
             {
-                // Filtramos en memoria usando LINQ
                 orders = orders.Where(o => o.Status == parsedStatus);
             }
             else
             {
-                // Si el estado no es válido (ej. "cualquiercosa"), devolvemos una lista vacía
-                // o podríamos lanzar un BadRequestException
                 return new List<OrderModel.Response>();
             }
         }
 
-        // 2. Aplicar filtro de Búsqueda (si se provee)
         if (!string.IsNullOrEmpty(search))
         {
             var searchTerm = search.ToLowerInvariant().Trim();
             orders = orders.Where(o =>
-                // Buscamos si el ID de la orden (como string) contiene el término
                 o.Id.ToString().ToLowerInvariant().Contains(searchTerm) ||
-                // Buscamos si el ID del cliente (como string) contiene el término
                 o.CustomerId.ToString().ToLowerInvariant().Contains(searchTerm)
             );
         }
 
-        // ordenar de mas actual a mas antigua
         orders = orders.OrderByDescending(o => o.Date);
 
-        var skip = (pageNumber - 1) * pageSize; // algoritmo para tomar la cant de orders
-        var ordersPag = orders.Skip(skip).Take(pageSize); // ordersPag = lista ya PAGINADA
+        var skip = (pageNumber - 1) * pageSize;
+        var ordersPag = orders.Skip(skip).Take(pageSize);
 
         _logger.LogInformation("Se listaron {Count} ordenes" +
-            " en pagina {pNumber} con tamaño de pagina {pSize}",ordersPag.Count(),pageNumber, pageSize );
+            " en pagina {pNumber} con tamaño de pagina {pSize}", ordersPag.Count(), pageNumber, pageSize);
 
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
 
-        var responses = ordersPag.Select(order =>
+        // ← CAMBIO IMPORTANTE: Usamos una lista para poder usar async
+        var responses = new List<OrderModel.Response>();
+
+        foreach (var order in ordersPag) // ← Cambiamos Select por foreach
         {
+            // ← OBTENER EL USUARIO
+            var user = await _userManager.FindByIdAsync(order.CustomerId.ToString());
+
             var items = orderItems
                 .Where(i => i.OrderId == order.Id)
                 .Select(item =>
@@ -166,17 +178,18 @@ public class OrdersManagementService
                     );
                 }).ToList();
 
-            return new OrderModel.Response(
+            responses.Add(new OrderModel.Response(
                 Id: order.Id,
                 CustomerId: order.CustomerId,
+                CustomerName: user?.UserName ?? "Usuario Desconocido", 
                 Status: order.Status,
                 TotalAmount: order.TotalAmount,
                 Date: order.Date,
                 ShippingAddress: order.ShippingAddress,
                 BillingAddress: order.BillingAddress,
                 Items: items
-            );
-        });
+            ));
+        }
 
         return responses;
     }
@@ -185,7 +198,9 @@ public class OrdersManagementService
     {
         var orders = await _repository.GetAll<Order>();
 
-        if( orders == null  || !orders.Any())
+
+
+        if ( orders == null  || !orders.Any())
         {
             return new OrderModel.OrdersSummaryResponse(
                 TotalOrders: 0,
@@ -221,6 +236,7 @@ public class OrdersManagementService
         if (order == null)
             throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
 
+        var user = await _userManager.FindByIdAsync(order.CustomerId.ToString());
         // Reutilizamos la lógica que ya teníamos para buscar items y productos
         var items = await _repository.Where<OrderItems>(i => i.OrderId == order.Id);
         var products = await _repository.GetAll<Product>();
@@ -228,6 +244,7 @@ public class OrdersManagementService
         return new OrderModel.Response(
             Id: order.Id,
             CustomerId: order.CustomerId,
+            CustomerName: user?.UserName ?? "Usuario desconocido",
             Status: order.Status,
             TotalAmount: order.TotalAmount,
             Date: order.Date,
@@ -260,9 +277,12 @@ public class OrdersManagementService
         var items = await _repository.Where<OrderItems>(i => i.OrderId == order.Id);
         var products = await _repository.GetAll<Product>();
 
+        var user = await _userManager.FindByIdAsync(order.CustomerId.ToString());
+
         return new OrderModel.Response(
             Id: order.Id,
             CustomerId: order.CustomerId,
+            CustomerName: user?.UserName ?? "Usuario desconocido",
             Status: order.Status,
             TotalAmount: order.TotalAmount,
             Date: order.Date,
@@ -344,7 +364,13 @@ public class OrdersManagementService
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
 
-        var responses = ordersPag.Select(order =>
+        // ← OPTIMIZACIÓN: Como todas las órdenes son del mismo cliente, busca UNA sola vez
+        var user = await _userManager.FindByIdAsync(customerId.ToString());
+
+        // ← CAMBIO: Usar foreach en lugar de Select porque necesitamos async
+        var responses = new List<OrderModel.Response>();
+
+        foreach (var order in ordersPag)
         {
             var items = orderItems
                 .Where(i => i.OrderId == order.Id)
@@ -360,17 +386,18 @@ public class OrdersManagementService
                     );
                 }).ToList();
 
-            return new OrderModel.Response(
+            responses.Add(new OrderModel.Response(
                 Id: order.Id,
                 CustomerId: order.CustomerId,
+                CustomerName: user?.UserName ?? "Usuario Desconocido", 
                 Status: order.Status,
                 TotalAmount: order.TotalAmount,
                 Date: order.Date,
                 ShippingAddress: order.ShippingAddress,
                 BillingAddress: order.BillingAddress,
                 Items: items
-            );
-        });
+            ));
+        }
 
         return new PagedResult<OrderModel.Response>(
             Items: responses,
