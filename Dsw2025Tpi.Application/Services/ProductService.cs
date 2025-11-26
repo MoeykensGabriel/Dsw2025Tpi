@@ -33,8 +33,14 @@ public class ProductsManagementService
     public async Task<ProductModel.Response> AddProduct(ProductModel.Request product)
     {
         if (string.IsNullOrWhiteSpace(product.Sku) || string.IsNullOrWhiteSpace(product.InternalCode) ||
-            string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Description))
+            string.IsNullOrWhiteSpace(product.Name)) 
             throw new BadRequestException("Faltan datos del producto a llenar.");
+        //Validacion descripcion
+        if (string.IsNullOrWhiteSpace(product.Description))
+        {
+            // Usamos tu excepción personalizada para generar el JSON correcto
+            throw new BadRequestException("La descripción es obligatoria.", "DESCRIPTION_REQUIRED");
+        }
         // Validación del formato SKU
         if (!_skuRegex.IsMatch(product.Sku))
         {
@@ -239,6 +245,15 @@ public class ProductsManagementService
         if (await _repository.First<Product>(p => p.Sku == product.Sku && p.Id != id) != null)
             throw new DuplicatedEntityException($"Producto con el Sku={product.Sku} a modificar ya esta asociado a otro producto");
 
+        if (product.Description != null)
+        {
+            if (!string.IsNullOrWhiteSpace(product.Description))
+                productById.Description = product.Description;
+            else
+                // Aquí se lanzará tu excepción personalizada con formato JSON
+                throw new BadRequestException("La descripción no puede estar vacía.", "DESCRIPTION_REQUIRED");
+        }
+
         if (product.Sku != null)
         {
             if (!string.IsNullOrWhiteSpace(product.Sku))
@@ -246,7 +261,7 @@ public class ProductsManagementService
                 // --- AÑADIR VALIDACION DE FORMATO SKU ---
                 if (!_skuRegex.IsMatch(product.Sku))
                 {
-                    throw new BadRequestException("El formato del SKU no es válido. Debe ser SKU-XXXXX.", "SKU_INVALID_FORMAT");
+                    throw new BadRequestException("El formato del SKU no es valido. Debe ser SKU-XXXXX.", "SKU_INVALID_FORMAT");
                 }
                 productById.Sku = product.Sku;
             }
@@ -276,14 +291,6 @@ public class ProductsManagementService
             
             else
                 throw new BadRequestException("Codigo interno del producto no existe");
-        }
-
-        if (product.Description != null)
-        {
-            if (!string.IsNullOrWhiteSpace(product.Description))
-                productById.Description = product.Description;
-            else
-                throw new BadRequestException("Descripcion del producto no existe");
         }
 
         if (product.StockQuantity != null)

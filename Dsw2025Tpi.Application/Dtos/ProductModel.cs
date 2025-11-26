@@ -19,7 +19,7 @@ public record ProductModel
     string Sku,
     string InternalCode,
     string Name,
-    string Description,
+    string? Description,
     decimal CurrentUnitPrice,
     int StockQuantity,
     bool IsActive, 
