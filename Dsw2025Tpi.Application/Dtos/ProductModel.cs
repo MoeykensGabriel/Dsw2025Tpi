@@ -10,7 +10,7 @@ namespace Dsw2025Tpi.Application.Dtos;
 public record ProductModel
 {
     public record Request(
-    string Sku, string InternalCode, string Name, string Description, decimal CurrentUnitPrice,
+    string Sku, string InternalCode, string Name, string? Description, decimal CurrentUnitPrice,
     int StockQuantity, string? ImageUrl, bool IsActive
     );
 
@@ -19,7 +19,7 @@ public record ProductModel
     string Sku,
     string InternalCode,
     string Name,
-    string? Description,
+    string Description,
     decimal CurrentUnitPrice,
     int StockQuantity,
     bool IsActive, 
