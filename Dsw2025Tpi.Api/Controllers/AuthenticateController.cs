@@ -62,20 +62,19 @@ public class AuthenticateController : ControllerBase
             }
             if (!Guid.TryParse(user.Id, out _))
             {
-                // Si el usuario tiene un ID viejo (como 'Coca'), lo actualizamos a un GUID
                 user.Id = Guid.NewGuid().ToString();
                 await _userManager.UpdateAsync(user);
             }
             Console.WriteLine("Generating token...");
             var token = await _jwtTokenService.GenerateToken(user);
-            // Obtenemos los roles del usuario
+            // obtener rol del usuario
             var roles = await _userManager.GetRolesAsync(user);
             var userResponse = new
             {
                 Id = user.Id,
                 Username = user.UserName,
                 Email = user.Email,
-                Roles = roles  // Añadimos los roles a la respuesta
+                Roles = roles  // roles en la respuesta
             };
             return Ok(new { token = token, user = userResponse });
         }
@@ -106,42 +105,35 @@ public class AuthenticateController : ControllerBase
 
         if (!result.Succeeded)
         {
-            // 1. Unimos todos los errores (ya traducidos por SpanishIdentityErrorDescriber) en un solo string
             var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
 
-            // 2. Devolvemos un objeto JSON simple con el mensaje
             return BadRequest(new { message = errorMessages });
         }
 
-        //Validamos el rol que llega. Si es inválido o vacío, asigna 'User'
         var roleToAdd = "User"; // Rol por defecto
         if (!string.IsNullOrEmpty(model.Role) && model.Role == "Admin")
         {
             roleToAdd = "Admin";
         }
-        // Forzamos la exclusión mutua
-        // Si vamos a agregar "Admin", nos aseguramos de quitar "User"
+        
         if (roleToAdd == "Admin")
         {
             await _userManager.RemoveFromRoleAsync(user, "User");
         }
-        // Si vamos a agregar "User", nos aseguramos de quitar "Admin"
+        
         else
         {
             await _userManager.RemoveFromRoleAsync(user, "Admin");
         }
 
-        // Agregamos el rol deseado
         await _userManager.AddToRoleAsync(user, roleToAdd);
         return Ok("Usuario Registrado con Exito");
-
     }
 
     [HttpPost("register-customer")]
-    [AllowAnonymous] // Público
+    [AllowAnonymous] 
     public async Task<IActionResult> RegisterCustomer([FromBody] RegisterModel model)
     {
-        // Generamos el ID manualmente para usarlo en ambas tablas
         var newId = Guid.NewGuid().ToString();
         var user = new IdentityUser
         {
@@ -158,25 +150,10 @@ public class AuthenticateController : ControllerBase
             return BadRequest(new { message = errorMessages });
         }
 
-        // Asignamos rol
+        // asignar ek rol
         await _userManager.AddToRoleAsync(user, "User");
 
         return Ok("Usuario Registrado con Exito");
-    }
-
-    // hago un endpoint para probar el tema de los roles
-    [Authorize(Roles = "Admin")]
-    [HttpGet("solo-admin")]
-    public IActionResult AdminEndpoint()
-    {
-        return Ok(" Hola Admin :D ");
-    }
-
-    [Authorize(Roles = "User")]
-    [HttpGet("solo-user")]
-    public IActionResult UserEndpoint()
-    {
-        return Ok(" Hola User :D ");
     }
 
 }

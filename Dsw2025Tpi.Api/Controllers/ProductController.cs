@@ -32,9 +32,9 @@ public class ProductController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] string? status = null)
     {
-        //El servicio ahora devuelve un objeto PagedResult<Product>
+        // el servicio ahora devuelve un objeto PagedResult<Product>
         var pagedResult = await _productsManagementService.GetAllProducts(pageSize, pageNumber, search, status);
-        //Devolvemos el objeto completo
+        // devolvemos el objeto completo
         return Ok(pagedResult);
     }
 

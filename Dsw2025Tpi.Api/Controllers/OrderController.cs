@@ -1,5 +1,4 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
-using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +18,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize] // Protegido para que solo usuarios logueados (admin o user) puedan ver
+    [Authorize] // solo admin y el mismo usuario pueden acceder
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetOrderById(Guid id)
     {
@@ -76,7 +75,7 @@ public class OrderController : ControllerBase
     public async Task<IActionResult> DeleteOrder(Guid id)
     {
         await _ordersManagementService.DeleteOrder(id);
-        return NoContent(); // 204 No Content es la respuesta estándar para un DELETE exitoso
+        return NoContent(); // 204 
     }
 
     [HttpGet("my-orders")]
@@ -88,20 +87,18 @@ public class OrderController : ControllerBase
         Guid userId = Guid.Empty;
         bool found = false;
 
-        // 1. Filtramos SOLO los claims que sean 'NameIdentifier' ('sub' o el string largo)
         var idClaims = User.Claims.Where(c =>
             c.Type == ClaimTypes.NameIdentifier ||
             c.Type == "sub" ||
             c.Type == "id"
         );
 
-        // 2. De esos, buscamos el que sea un GUID válido
         foreach (var claim in idClaims)
         {
             if (Guid.TryParse(claim.Value, out userId))
             {
                 found = true;
-                break; // ¡Encontramos el ID de usuario real!
+                break; 
             }
         }
 

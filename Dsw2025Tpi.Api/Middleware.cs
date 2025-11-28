@@ -51,21 +51,17 @@ public class ExceptionMiddleware
             _logger.LogWarning("Excepcion controlada : {Message}", exception.Message);
         }
 
-        // Creamos un objeto de respuesta por defecto
         object responsePayload;
 
-        // Verificamos si la excepción es una que nosotros controlamos con codigo
         if (exception is BadRequestException badRequestEx && !string.IsNullOrEmpty(badRequestEx.ErrorCode))
         {
             responsePayload = new { message = exception.Message, code = badRequestEx.ErrorCode };
         }
         else
         {
-            // Respuesta genérica para otras excepciones controladas
             responsePayload = new { message = exception.Message, code = exception.GetType().Name };
         }
 
-        // Serializamos el nuevo objeto
         var payload = JsonSerializer.Serialize(responsePayload);
 
 

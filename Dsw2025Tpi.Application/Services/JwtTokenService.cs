@@ -29,6 +29,7 @@ public class JwtTokenService
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var roles = await _userManager.GetRolesAsync(user);
 
+        // crear los claims
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
@@ -36,6 +37,7 @@ public class JwtTokenService
             new Claim(ClaimTypes.NameIdentifier, user.Id)
         };
 
+        // varios roles (no tendria que ser asi)
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));

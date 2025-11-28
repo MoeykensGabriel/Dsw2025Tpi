@@ -5,7 +5,7 @@ namespace Dsw2025Tpi.Application.Services;
 // Esta clase hereda del describer de errores por defecto de Identity
 public class SpanishIdentityErrorDescriber : IdentityErrorDescriber
 {
-    // --- ERRORES DE USUARIO ---
+    // errores de usuario
     public override IdentityError DuplicateUserName(string userName)
     {
         return new IdentityError
@@ -24,7 +24,7 @@ public class SpanishIdentityErrorDescriber : IdentityErrorDescriber
         };
     }
 
-    // --- ERRORES DE CONTRASEÑA ---
+    // errores de contraseña
     public override IdentityError PasswordTooShort(int length)
     {
         return new IdentityError
@@ -69,6 +69,5 @@ public class SpanishIdentityErrorDescriber : IdentityErrorDescriber
             Description = "La contraseña debe tener al menos un carácter especial (ej. !, @, #)."
         };
     }
-
-    // (Puedes seguir sobrescribiendo otros métodos si hace falta)
 }
+

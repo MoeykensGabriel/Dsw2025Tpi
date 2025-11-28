@@ -4,7 +4,6 @@ using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Identity;
 
 namespace Dsw2025Tpi.Application.Services;
 
@@ -155,12 +154,12 @@ public class OrdersManagementService
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
 
-        // ← CAMBIO IMPORTANTE: Usamos una lista para poder usar async
+        // * cambio : Usamos una lista para poder usar async
         var responses = new List<OrderModel.Response>();
 
         foreach (var order in ordersPag) // ← Cambiamos Select por foreach
         {
-            // ← OBTENER EL USUARIO
+            
             var user = await _userManager.FindByIdAsync(order.CustomerId.ToString());
 
             var items = orderItems
@@ -237,7 +236,7 @@ public class OrdersManagementService
             throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
 
         var user = await _userManager.FindByIdAsync(order.CustomerId.ToString());
-        // Reutilizamos la lógica que ya teníamos para buscar items y productos
+        // reutilizo el metodo de obtener los items
         var items = await _repository.Where<OrderItems>(i => i.OrderId == order.Id);
         var products = await _repository.GetAll<Product>();
 
@@ -250,8 +249,8 @@ public class OrdersManagementService
             Date: order.Date,
             ShippingAddress: order.ShippingAddress,
             BillingAddress: order.BillingAddress,
+
             Items: items.Select(item => new OrderModel.OrderItemResponse(
-                // Usamos FirstOrDefault para ser más seguros
                 ProductId: products.FirstOrDefault(p => p.Sku == item.SkuProd)?.Id ?? Guid.Empty,
                 Name: products.FirstOrDefault(p => p.Sku == item.SkuProd)?.Name ?? "Producto no encontrado",
                 Quantity: item.Quantity,
@@ -303,15 +302,13 @@ public class OrdersManagementService
         if (order == null)
             throw new EntityNotFoundException($"No se encontró una orden con ID {id}");
 
-        // Verificamos si debemos reponer el stock
-        // Solo reponemos si la orden estaba activa (PENDING, PROCESSING, SHIPPED)
+        // verificamos si debemos reponer stock
         bool shouldRestock = order.Status != OrderStatus.CANCELLED && order.Status != OrderStatus.DELIVERED;
 
         var items = await _repository.Where<OrderItems>(i => i.OrderId == id);
 
         if (shouldRestock)
         {
-            // Obtenemos los IDs de los productos para buscarlos
             var productIds = items.Select(i => i.ProductId).ToList();
             var products = await _repository.Where<Product>(p => productIds.Contains(p.Id));
 
@@ -320,54 +317,46 @@ public class OrdersManagementService
                 var product = products.FirstOrDefault(p => p.Id == item.ProductId);
                 if (product != null)
                 {
-                    // Devolvemos el stock al producto
+                    
                     product.StockQuantity += item.Quantity;
                     await _repository.Update(product);
                 }
-                // Borramos el item de la orden
                 await _repository.Delete(item);
             }
         }
         else
         {
-            // Si la orden ya estaba CANCELLED o DELIVERED, no reponemos stock
-            // Solo borramos los items
             foreach (var item in items)
             {
                 await _repository.Delete(item);
             }
         }
 
-        // Finalmente, borramos la orden
+        // borramos la orden
         await _repository.Delete(order);
         _logger.LogInformation("Orden {OrderId} y sus items fueron eliminados. Reposición de stock: {Restock}", id, shouldRestock);
     }
 
     public async Task<PagedResult<OrderModel.Response>> GetOrdersByCustomerId(Guid customerId, int pageNumber, int pageSize)
     {
-        // Filtramos por CustomerId
+        // buscar todas las ordenes del cliente
         var orders = await _repository.Where<Order>(o => o.CustomerId == customerId);
 
         if (!orders.Any())
             return new PagedResult<OrderModel.Response>(new List<OrderModel.Response>(), 0, pageNumber, 0);
 
-        // Ordenamos por fecha descendente (las más nuevas primero)
         orders = orders.OrderByDescending(o => o.Date);
 
-        // Paginación
         var totalCount = orders.Count();
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
         var skip = (pageNumber - 1) * pageSize;
         var ordersPag = orders.Skip(skip).Take(pageSize);
 
-        // Obtenemos datos relacionados para armar la respuesta
         var orderItems = await _repository.GetAll<OrderItems>();
         var products = await _repository.GetAll<Product>();
 
-        // ← OPTIMIZACIÓN: Como todas las órdenes son del mismo cliente, busca UNA sola vez
         var user = await _userManager.FindByIdAsync(customerId.ToString());
 
-        // ← CAMBIO: Usar foreach en lugar de Select porque necesitamos async
         var responses = new List<OrderModel.Response>();
 
         foreach (var order in ordersPag)

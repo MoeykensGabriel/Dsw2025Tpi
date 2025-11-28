@@ -21,7 +21,7 @@ public class ProductsManagementService
     private readonly ILogger<ProductsManagementService> _logger;
     // Expresion regular para para el SKU del producto (entre 5 y 10 caracteres)
     private readonly Regex _skuRegex = new Regex(@"^SKU-[a-zA-Z0-9]{5,10}$", RegexOptions.Compiled);
-    //Expresion regular para para el CODIGO UNICO del producto (entre 5 y 10 caracteres)
+    //Expresion regular para para el CODIGO UNICO o codigo interno del producto (entre 5 y 10 caracteres)
     private readonly Regex _internalCodeRegex = new Regex(@"^INT-[a-zA-Z0-9]{5,10}$", RegexOptions.Compiled);
 
     public ProductsManagementService(IRepository repository, ILogger<ProductsManagementService> logger)
@@ -35,12 +35,12 @@ public class ProductsManagementService
         if (string.IsNullOrWhiteSpace(product.Sku) || string.IsNullOrWhiteSpace(product.InternalCode) ||
             string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Description))
             throw new BadRequestException("Faltan datos del producto a llenar.");
-        // Validación del formato SKU
+        // validar el formato del sku (solo se ponen los nros)
         if (!_skuRegex.IsMatch(product.Sku))
         {
             throw new BadRequestException("El formato del SKU no es válido. Debe ser SKU-XXXXX.", "SKU_INVALID_FORMAT");
         }
-        // Validación del formato CODIGO UNICO
+        // idem para el codigo interno
         if (string.IsNullOrWhiteSpace(product.InternalCode) || !_internalCodeRegex.IsMatch(product.InternalCode))
         {
             throw new BadRequestException("El formato del Código Interno no es válido. Debe ser INT-XXXXX (5-10 caracteres).", "INTERNALCODE_INVALID_FORMAT");
@@ -243,7 +243,7 @@ public class ProductsManagementService
         {
             if (!string.IsNullOrWhiteSpace(product.Sku))
             {
-                // --- AÑADIR VALIDACION DE FORMATO SKU ---
+                // validacion del formato del sku
                 if (!_skuRegex.IsMatch(product.Sku))
                 {
                     throw new BadRequestException("El formato del SKU no es válido. Debe ser SKU-XXXXX.", "SKU_INVALID_FORMAT");
@@ -266,7 +266,7 @@ public class ProductsManagementService
         {
             if (!string.IsNullOrWhiteSpace(product.InternalCode))
             {
-                // --- AÑADIR VALIDACION DE FORMATO SKU ---
+               
                 if (!_internalCodeRegex.IsMatch(product.InternalCode))
                 {
                     throw new BadRequestException("El formato del Código Interno no es válido. Debe ser INT-XXXXX (5-10 caracteres).", "INTERNALCODE_INVALID_FORMAT");
