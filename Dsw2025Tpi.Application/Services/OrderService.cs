@@ -137,9 +137,21 @@ public class OrdersManagementService
         if (!string.IsNullOrEmpty(search))
         {
             var searchTerm = search.ToLowerInvariant().Trim();
+
+            //  Buscamos los IDs de los usuarios cuyo Username o Email coincida
+            var matchingUserIds = _userManager.Users
+                .Where(u => u.UserName.ToLower().Contains(searchTerm) || u.Email.ToLower().Contains(searchTerm))
+                .Select(u => u.Id)
+                .ToList();
+
+            //  Filtramos las ordenes que coincidan con:
+            //    ID de la Orden
+            //    ID del Cliente
+            //    O que el CustomerId esté en la lista de usuarios encontrados por nombre
             orders = orders.Where(o =>
                 o.Id.ToString().ToLowerInvariant().Contains(searchTerm) ||
-                o.CustomerId.ToString().ToLowerInvariant().Contains(searchTerm)
+                o.CustomerId.ToString().ToLowerInvariant().Contains(searchTerm) ||
+                matchingUserIds.Contains(o.CustomerId.ToString()) 
             );
         }
 
